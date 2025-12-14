@@ -97,7 +97,7 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
           <img
             src={isDark ? "/logo-white.png" : "/logo-black.png"}
             alt="Diadem Logo"
-            className="h-10 object-contain transition-all duration-500"
+            className="h-14 object-contain transition-all duration-500"
           />
         </div>
 
@@ -176,7 +176,7 @@ const ThreeBackground = ({ isDark }) => {
       color: isDark ? 0x444444 : 0xdddddd,
       wireframe: true,
       transparent: true,
-      opacity: isDark ? 0.5 : 0.4
+      opacity: isDark ? 0.2 : 0.4
     });
     const globe = new THREE.Mesh(geometry, material);
     globeRef.current = globe;
