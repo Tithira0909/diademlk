@@ -176,7 +176,7 @@ const ThreeBackground = ({ isDark }) => {
       color: isDark ? 0x444444 : 0xdddddd,
       wireframe: true,
       transparent: true,
-      opacity: isDark ? 0.5 : 0.15
+      opacity: isDark ? 0.5 : 0.4
     });
     const globe = new THREE.Mesh(geometry, material);
     globeRef.current = globe;
