@@ -337,15 +337,17 @@ const StatsStrip = ({ isDark }) => {
 };
 
 // 6. Services & Values
+import { BookOpen, Briefcase, Truck, ChevronRight, CheckCircle, Users } from 'lucide-react'; // Assuming these are your imports
+
 const ServiceCard = ({ icon: Icon, title, desc, imgPlaceholder, isDark }) => (
     <div className={`group relative border overflow-hidden reveal ${isDark ? 'border-zinc-800 bg-zinc-900/30' : 'border-zinc-200 bg-zinc-50'}`}>
-        {/* Image Area */}
+        {/* Image Area - FIXED */}
         <div className={`h-48 md:h-64 w-full relative overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-300'}`}>
-            <div className="absolute inset-0 flex items-center justify-center text-center p-4">
-                <span className={`text-xs uppercase tracking-widest font-bold opacity-30 ${isDark ? 'text-white' : 'text-black'}`}>
-                    {imgPlaceholder}
-                </span>
-            </div>
+            <img 
+                src={imgPlaceholder} 
+                alt={title} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
             {/* Hover Overlay */}
             <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}></div>
         </div>
@@ -378,21 +380,21 @@ const Services = ({ isDark }) => (
                     icon={BookOpen}
                     title="Academy & Training"
                     desc="Empower local entrepreneurs with knowledge. Courses on Import/Export procedures designed to help you reach the global market."
-                    imgPlaceholder="[Image: Training Session]"
+                    imgPlaceholder="test"
                 />
                 <ServiceCard
                     isDark={isDark}
                     icon={Briefcase}
                     title="Export Consultancy"
                     desc="Full management: Business registration (BR, TIN), Customs registration, Buyer/Seller verification, and Shipping Agent coordination."
-                    imgPlaceholder="[Image: Consultation]"
+                    imgPlaceholder="/images/consultation.jpg"
                 />
                 <ServiceCard
                     isDark={isDark}
                     icon={Truck}
                     title="Global Logistics"
                     desc="All kinds of logistic solutions. From Customs clearance to Door-to-Door delivery services tailored to your requirements."
-                    imgPlaceholder="[Image: Logistics/Port]"
+                    imgPlaceholder="/images/logistics.jpg"
                 />
             </div>
         </div>
