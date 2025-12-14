@@ -94,13 +94,11 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         {/* Logo Area */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavClick('home')}>
-          <div className={`w-10 h-10 border-2 rounded-sm flex items-center justify-center transition-transform group-hover:rotate-45 duration-500 ${isDark ? 'border-white bg-transparent' : 'border-black bg-transparent'}`}>
-            <span className={`font-artistic font-bold text-xl group-hover:-rotate-45 transition-transform duration-500 ${logoText}`}>D</span>
-          </div>
-          <div className="flex flex-col">
-            <span className={`font-artistic font-bold text-xl tracking-[0.2em] leading-none ${textColor}`}>DIADEM</span>
-            <span className={`text-[0.6rem] uppercase tracking-widest opacity-60 ${textColor}`}>Global Trade</span>
-          </div>
+          <img
+            src={isDark ? "/logo-white.png" : "/logo-black.png"}
+            alt="Diadem Logo"
+            className="h-10 object-contain transition-all duration-500"
+          />
         </div>
 
         {/* Desktop Nav */}
@@ -178,7 +176,7 @@ const ThreeBackground = ({ isDark }) => {
       color: isDark ? 0x444444 : 0xdddddd,
       wireframe: true,
       transparent: true,
-      opacity: 0.15
+      opacity: isDark ? 0.5 : 0.15
     });
     const globe = new THREE.Mesh(geometry, material);
     globeRef.current = globe;
