@@ -561,7 +561,7 @@ const Footer = ({ isDark }) => {
 // --- MAIN APP ---
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useScrollReveal();
 
