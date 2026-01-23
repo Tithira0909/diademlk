@@ -1,0 +1,185 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { db } from './db.js';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const SECRET_KEY = process.env.SECRET_KEY || 'secret';
+
+app.use(cors());
+app.use(express.json());
+// Serve uploads statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// --- FILE UPLOAD SETUP ---
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// --- MIDDLEWARE ---
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
+// --- ROUTES ---
+
+// File Upload
+app.post('/api/upload', authenticateToken, upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.json({ url: fileUrl });
+});
+
+// Login
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    if (rows.length > 0) {
+      const user = rows[0];
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (validPassword) {
+          const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+          res.json({ id: user.id, username: user.username, role: user.role, token });
+      } else {
+          res.status(401).json({ message: 'Invalid credentials' });
+      }
+    } else {
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Articles
+app.get('/api/articles', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM articles ORDER BY id DESC');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/articles', authenticateToken, async (req, res) => {
+  const { title, category, excerpt, content, image, pdfUrl, readTime, author } = req.body;
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+  try {
+    const [result] = await db.query(
+      'INSERT INTO articles (title, category, excerpt, content, image, pdfUrl, readTime, author, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [title, category, excerpt, content, image, pdfUrl, readTime, author, date]
+    );
+    res.status(201).json({ id: result.insertId, ...req.body, date });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/articles/:id', authenticateToken, async (req, res) => {
+  try {
+    await db.query('DELETE FROM articles WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Inquiries
+app.get('/api/inquiries', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM inquiries ORDER BY id DESC');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/inquiries', async (req, res) => {
+  const { name, email, phone, message } = req.body;
+  const date = new Date().toLocaleString();
+  try {
+    const [result] = await db.query(
+      'INSERT INTO inquiries (name, email, phone, message, date) VALUES (?, ?, ?, ?, ?)',
+      [name, email, phone, message, date]
+    );
+    res.status(201).json({ id: result.insertId, ...req.body, date });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Users
+app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT id, username, role FROM users');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.post('/api/users', authenticateToken, async (req, res) => {
+    const { username, password, role } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [result] = await db.query(
+            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+            [username, hashedPassword, role || 'client']
+        );
+        res.status(201).json({ id: result.insertId, username, role });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
