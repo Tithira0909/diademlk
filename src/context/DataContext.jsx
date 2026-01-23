@@ -30,7 +30,11 @@ export const DataProvider = ({ children }) => {
 
             // Articles are public
             const articlesRes = await fetch(`${API_URL}/articles`);
-            if (articlesRes.ok) setArticles(await articlesRes.json());
+            if (articlesRes.ok) {
+                setArticles(await articlesRes.json());
+            } else {
+                console.error("Articles Fetch Failed:", articlesRes.status, await articlesRes.text());
+            }
 
             // Protected Data
             if (token) {

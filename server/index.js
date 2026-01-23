@@ -24,6 +24,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY || 'secret';
 
+// Check Database Connection on Startup
+db.query('SELECT 1')
+  .then(() => console.log('✅ Database connected successfully.'))
+  .catch(err => {
+    console.error('❌ Database Connection Failed:', err.message);
+    console.error('Hint: Run "npm run setup" to create the database, or check your .env credentials.');
+  });
+
 app.use(cors());
 app.use(express.json());
 // Serve uploads statically
@@ -85,6 +93,7 @@ app.post('/api/login', async (req, res) => {
       res.status(401).json({ message: 'Invalid credentials' });
     }
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -95,6 +104,7 @@ app.get('/api/articles', async (req, res) => {
     const [rows] = await db.query('SELECT * FROM articles ORDER BY id DESC');
     res.json(rows);
   } catch (error) {
+    console.error("Fetch Articles Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
