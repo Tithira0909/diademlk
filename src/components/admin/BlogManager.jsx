@@ -29,17 +29,23 @@ const BlogManager = () => {
       const formData = new FormData();
       formData.append('file', file);
 
+      const user = JSON.parse(localStorage.getItem('diadem_currentUser'));
+      const token = user?.token;
+
       try {
           setUploading(true);
           const res = await fetch('http://localhost:5000/api/upload', {
               method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              },
               body: formData
           });
           if (res.ok) {
               const data = await res.json();
               setNewArticle(prev => ({ ...prev, pdfUrl: data.url }));
           } else {
-              alert('Upload failed');
+              alert('Upload failed: ' + res.statusText);
           }
       } catch (error) {
           console.error("Upload error:", error);

@@ -7,7 +7,7 @@ import {
 import { useData } from '../../context/DataContext';
 
 const AdminLayout = () => {
-  const { logout, currentUser } = useData();
+  const { logout, currentUser, loading } = useData();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -23,11 +23,12 @@ const AdminLayout = () => {
   ];
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!loading && !currentUser) {
       navigate('/login');
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, loading, navigate]);
 
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!currentUser) return null;
 
   return (

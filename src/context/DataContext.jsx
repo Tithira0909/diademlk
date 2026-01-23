@@ -19,13 +19,17 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('diadem_currentUser'));
     if (storedUser) setCurrentUser(storedUser);
+    setLoading(false); // Initial load complete
   }, []);
 
   // Fetch Initial Data (Public + Protected if logged in)
   useEffect(() => {
     const fetchData = async () => {
         try {
-            setLoading(true);
+            // Only set loading if we are doing a hard refresh or initial fetch
+            // We don't want to flicker loading on every render
+            if (loading) setLoading(true);
+
             const token = currentUser?.token;
 
             // Articles are public
