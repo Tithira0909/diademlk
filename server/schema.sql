@@ -36,10 +36,29 @@ CREATE TABLE IF NOT EXISTS inquiries (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Banners Table
+CREATE TABLE IF NOT EXISTS banners (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    imageUrl VARCHAR(500) NOT NULL,
+    link VARCHAR(500),
+    active BOOLEAN DEFAULT TRUE,
+    list_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Site Stats Table
+CREATE TABLE IF NOT EXISTS site_stats (
+    id INT PRIMARY KEY DEFAULT 1,
+    views INT DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Seed Data (Password is 'password')
 INSERT INTO users (username, password, role) VALUES
 ('admin', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin'),
-('client', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'client');
+('client', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'client')
+ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO articles (title, category, excerpt, content, image, readTime, author, date) VALUES
 (
@@ -51,4 +70,7 @@ INSERT INTO articles (title, category, excerpt, content, image, readTime, author
     "5 min read",
     "Dr. A. Perera",
     "Dec 02, 2024"
-);
+)
+ON DUPLICATE KEY UPDATE id=id;
+
+INSERT IGNORE INTO site_stats (id, views) VALUES (1, 0);

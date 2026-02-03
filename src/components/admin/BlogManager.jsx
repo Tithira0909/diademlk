@@ -3,7 +3,7 @@ import { useData } from '../../context/DataContext';
 import { Plus, Trash2, Edit2, FileText, Image as ImageIcon, X } from 'lucide-react';
 
 const BlogManager = () => {
-  const { articles, addArticle, deleteArticle } = useData();
+  const { articles, addArticle, deleteArticle, uploadFile } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newArticle, setNewArticle] = useState({
     title: '',
@@ -26,27 +26,10 @@ const BlogManager = () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const user = JSON.parse(localStorage.getItem('diadem_currentUser'));
-      const token = user?.token;
-
       try {
           setUploading(true);
-          const res = await fetch('http://localhost:5000/api/upload', {
-              method: 'POST',
-              headers: {
-                  'Authorization': `Bearer ${token}`
-              },
-              body: formData
-          });
-          if (res.ok) {
-              const data = await res.json();
-              setNewArticle(prev => ({ ...prev, pdfUrl: data.url }));
-          } else {
-              alert('Upload failed: ' + res.statusText);
-          }
+          const data = await uploadFile(file);
+          setNewArticle(prev => ({ ...prev, pdfUrl: data.url }));
       } catch (error) {
           console.error("Upload error:", error);
           alert('Upload failed');

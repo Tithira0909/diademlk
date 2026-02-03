@@ -9,6 +9,8 @@ export const DataProvider = ({ children }) => {
   const [articles, setArticles] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [users, setUsers] = useState([]);
+  const [banners, setBanners] = useState([]);
+  const [siteViews, setSiteViews] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +40,15 @@ export const DataProvider = ({ children }) => {
                 setArticles(await articlesRes.json());
             } else {
                 console.error("Articles Fetch Failed:", articlesRes.status, await articlesRes.text());
+            }
+
+            const bannersRes = await fetch(`${API_URL}/banners`);
+            if (bannersRes.ok) setBanners(await bannersRes.json());
+
+            const viewsRes = await fetch(`${API_URL}/views`);
+            if (viewsRes.ok) {
+                const data = await viewsRes.json();
+                setSiteViews(data.views);
             }
 
             // Protected Data
@@ -146,6 +157,60 @@ export const DataProvider = ({ children }) => {
       }
   }
 
+  // Banners
+  const addBanner = async (banner) => {
+    try {
+        const res = await fetch(`${API_URL}/banners`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(banner)
+        });
+        if (res.ok) {
+            const newBanner = await res.json();
+            setBanners(prev => [...prev, newBanner].sort((a,b) => a.list_order - b.list_order));
+        }
+    } catch (error) {
+        console.error("Error adding banner:", error);
+    }
+  };
+
+  const deleteBanner = async (id) => {
+      try {
+          await fetch(`${API_URL}/banners/${id}`, {
+              method: 'DELETE',
+              headers: getHeaders()
+          });
+          setBanners(prev => prev.filter(b => b.id !== id));
+      } catch (error) {
+          console.error("Error deleting banner:", error);
+      }
+  };
+
+  // File Upload Helper
+  const uploadFile = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const user = JSON.parse(localStorage.getItem('diadem_currentUser'));
+      const token = user?.token;
+
+      const res = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+      });
+      if (!res.ok) throw new Error('Upload failed: ' + res.statusText);
+      return await res.json();
+  };
+
+  // View Increment Helper
+  const incrementViews = async () => {
+      try {
+          await fetch(`${API_URL}/views/increment`, { method: 'POST' });
+      } catch (err) {
+          console.error("View increment failed", err);
+      }
+  };
+
   // Auth
   const login = async (username, password) => {
     try {
@@ -179,6 +244,8 @@ export const DataProvider = ({ children }) => {
       articles,
       inquiries,
       users,
+      banners,
+      siteViews,
       currentUser,
       loading,
       addArticle,
@@ -186,6 +253,10 @@ export const DataProvider = ({ children }) => {
       addInquiry,
       addUser,
       deleteUser,
+      addBanner,
+      deleteBanner,
+      uploadFile,
+      incrementViews,
       login,
       logout
     }}>
