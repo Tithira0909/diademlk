@@ -26,8 +26,8 @@ const Hero = ({ isDark }) => {
                     key={b.id}
                     className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
                 >
-                    <div className="absolute inset-0 bg-black/50 z-10"></div> {/* Overlay */}
                     <img src={b.imageUrl} alt={b.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50"></div> {/* Overlay */}
                 </div>
             ))}
 
