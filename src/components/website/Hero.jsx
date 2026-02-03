@@ -20,20 +20,25 @@ const Hero = ({ isDark }) => {
       const banner = banners[currentIndex];
       return (
         <section id="home" className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-black">
-            {/* Background Image with Transition */}
-             {banners.map((b, index) => (
-                <div
-                    key={b.id}
-                    className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
-                >
-                    <img src={b.imageUrl} alt={b.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50"></div> {/* Overlay */}
-                </div>
-            ))}
+            {/* Background Image with Transition - Z-Index 0 */}
+            <div className="absolute inset-0 z-0">
+                 {banners.map((b, index) => (
+                    <div
+                        key={b.id}
+                        className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                        <img src={b.imageUrl} alt={b.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/50"></div> {/* Overlay */}
+                    </div>
+                ))}
+            </div>
 
-            {/* Globe Overlay */}
-            <ThreeBackground isDark={true} />
+            {/* Globe Overlay - Z-Index 10 */}
+            <div className="absolute inset-0 z-10 pointer-events-none">
+                <ThreeBackground isDark={true} />
+            </div>
 
+            {/* Text Content - Z-Index 20 */}
             <div className="relative z-20 max-w-6xl mx-auto px-6 text-center pt-24 md:pt-32">
                  <div className="reveal active">
                     <h1 className="font-artistic text-4xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 leading-[1.1] text-white drop-shadow-lg max-w-4xl mx-auto">
