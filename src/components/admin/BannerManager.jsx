@@ -34,18 +34,27 @@ const BannerManager = () => {
       }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if(!newBanner.imageUrl) return alert('Image is required');
 
-    addBanner(newBanner);
-    setIsModalOpen(false);
-    setNewBanner({
-        title: '',
-        imageUrl: '',
-        link: '',
-        list_order: 0
-    });
+    const bannerToSave = {
+        ...newBanner,
+        list_order: parseInt(newBanner.list_order) || 0
+    };
+
+    const success = await addBanner(bannerToSave);
+    if (success) {
+        setIsModalOpen(false);
+        setNewBanner({
+            title: '',
+            imageUrl: '',
+            link: '',
+            list_order: 0
+        });
+    } else {
+        alert('Failed to add banner');
+    }
   };
 
   return (
@@ -97,7 +106,7 @@ const BannerManager = () => {
       {/* Add Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold text-gray-800">New Banner</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-black"><X /></button>

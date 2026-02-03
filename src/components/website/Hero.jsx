@@ -31,6 +31,9 @@ const Hero = ({ isDark }) => {
                 </div>
             ))}
 
+            {/* Globe Overlay */}
+            <ThreeBackground isDark={true} />
+
             <div className="relative z-20 max-w-6xl mx-auto px-6 text-center pt-24 md:pt-32">
                  <div className="reveal active">
                     <h1 className="font-artistic text-4xl md:text-6xl lg:text-7xl font-bold mb-6 md:mb-8 leading-[1.1] text-white drop-shadow-lg max-w-4xl mx-auto">

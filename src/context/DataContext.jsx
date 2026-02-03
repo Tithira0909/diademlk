@@ -92,9 +92,12 @@ export const DataProvider = ({ children }) => {
         if (res.ok) {
             const newArticle = await res.json();
             setArticles(prev => [newArticle, ...prev]);
+            return true;
         }
+        return false;
     } catch (error) {
         console.error("Error adding article:", error);
+        return false;
     }
   };
 
@@ -168,9 +171,12 @@ export const DataProvider = ({ children }) => {
         if (res.ok) {
             const newBanner = await res.json();
             setBanners(prev => [...prev, newBanner].sort((a,b) => a.list_order - b.list_order));
+            return true;
         }
+        return false;
     } catch (error) {
         console.error("Error adding banner:", error);
+        return false;
     }
   };
 

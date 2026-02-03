@@ -38,7 +38,7 @@ const BlogManager = () => {
       }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if(!newArticle.title || !newArticle.category) return;
 
@@ -49,18 +49,22 @@ const BlogManager = () => {
         content: newArticle.content || `<p>${newArticle.excerpt}</p>`
     };
 
-    addArticle(finalArticle);
-    setIsModalOpen(false);
-    setNewArticle({
-        title: '',
-        category: '',
-        excerpt: '',
-        content: '',
-        image: '',
-        readTime: '5 min read',
-        author: 'Admin',
-        pdfUrl: ''
-    });
+    const success = await addArticle(finalArticle);
+    if (success) {
+        setIsModalOpen(false);
+        setNewArticle({
+            title: '',
+            category: '',
+            excerpt: '',
+            content: '',
+            image: '',
+            readTime: '5 min read',
+            author: 'Admin',
+            pdfUrl: ''
+        });
+    } else {
+        alert('Failed to save article');
+    }
   };
 
   return (
