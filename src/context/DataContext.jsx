@@ -15,7 +15,7 @@ export const DataProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // API Base URL
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = '/api';
 
   // Load User from LocalStorage on mount (persist login)
   useEffect(() => {
