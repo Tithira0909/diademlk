@@ -22,14 +22,14 @@ const BlogManager = () => {
     setNewArticle(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = async (e, field) => {
       const file = e.target.files[0];
       if (!file) return;
 
       try {
           setUploading(true);
           const data = await uploadFile(file);
-          setNewArticle(prev => ({ ...prev, pdfUrl: data.url }));
+          setNewArticle(prev => ({ ...prev, [field]: data.url }));
       } catch (error) {
           console.error("Upload error:", error);
           alert('Upload failed');
@@ -148,19 +148,24 @@ const BlogManager = () => {
               </div>
 
               <div className="space-y-2">
-                 <label className="text-sm font-bold text-gray-600">Cover Image URL</label>
-                 <div className="flex gap-2">
-                    <input name="image" value={newArticle.image} onChange={handleChange} className="flex-1 p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://..." />
-                    <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center text-gray-400">
-                        {newArticle.image ? <img src={newArticle.image} className="w-full h-full object-cover rounded" /> : <ImageIcon size={20} />}
-                    </div>
-                 </div>
+                 <label className="text-sm font-bold text-gray-600">Cover Image</label>
+                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
+                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      {newArticle.image ? (
+                          <img src={newArticle.image} className="max-h-48 mx-auto rounded shadow-sm" alt="Preview" />
+                      ) : (
+                          <>
+                            <ImageIcon className="mx-auto text-gray-400 mb-2" />
+                            <p className="text-sm text-gray-500">{uploading ? "Uploading..." : "Click to upload cover image"}</p>
+                          </>
+                      )}
+                  </div>
               </div>
 
               <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-600">Article PDF (Upload)</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                      <input type="file" accept="application/pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                      <input type="file" accept="application/pdf" onChange={(e) => handleFileUpload(e, 'pdfUrl')} className="absolute inset-0 opacity-0 cursor-pointer" />
                       <FileText className="mx-auto text-gray-400 mb-2" />
                       <p className="text-sm text-gray-500">
                           {uploading ? "Uploading..." : (newArticle.pdfUrl ? <span className="text-green-600 font-bold">PDF Uploaded!</span> : "Click to upload PDF")}
