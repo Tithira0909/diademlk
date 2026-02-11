@@ -37,6 +37,10 @@ app.use(express.json());
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve frontend statically
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
 // --- FILE UPLOAD SETUP ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -246,6 +250,10 @@ app.post('/api/views/increment', async (req, res) => {
     }
 });
 
+// Handle SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
