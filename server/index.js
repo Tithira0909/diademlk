@@ -127,6 +127,19 @@ app.post('/api/articles', authenticateToken, async (req, res) => {
   }
 });
 
+app.put('/api/articles/:id', authenticateToken, async (req, res) => {
+  const { title, category, excerpt, content, image, pdfUrl, readTime, author } = req.body;
+  try {
+    await db.query(
+      'UPDATE articles SET title = ?, category = ?, excerpt = ?, content = ?, image = ?, pdfUrl = ?, readTime = ?, author = ? WHERE id = ?',
+      [title, category, excerpt, content, image, pdfUrl, readTime, author, req.params.id]
+    );
+    res.json({ id: req.params.id, ...req.body });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.delete('/api/articles/:id', authenticateToken, async (req, res) => {
   try {
     await db.query('DELETE FROM articles WHERE id = ?', [req.params.id]);
