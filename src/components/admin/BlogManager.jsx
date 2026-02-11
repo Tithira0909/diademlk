@@ -46,7 +46,7 @@ const BlogManager = () => {
     const finalArticle = {
         ...newArticle,
         image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        content: newArticle.content || `<p>${newArticle.excerpt}</p>`
+        content: newArticle.content
     };
 
     const success = await addArticle(finalArticle);
@@ -149,6 +149,11 @@ const BlogManager = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Excerpt</label>
                 <textarea required name="excerpt" value={newArticle.excerpt} onChange={handleChange} rows="3" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Brief summary..."></textarea>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600">Content</label>
+                <textarea name="content" value={newArticle.content} onChange={handleChange} rows="6" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Full article content (HTML supported)..."></textarea>
               </div>
 
               <div className="space-y-2">
