@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight, ChevronRight, FileText } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
+const stripHtml = (html) => {
+    if (!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+};
+
 const BlogCard = ({ post, isDark }) => (
     <Link
         to={`/article/${post.id}`}
@@ -45,7 +51,7 @@ const BlogCard = ({ post, isDark }) => (
             </h3>
 
             <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
-                {post.excerpt}
+                {stripHtml(post.excerpt)}
             </p>
 
             <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>

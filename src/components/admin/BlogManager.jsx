@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { Plus, Trash2, Edit2, FileText, Image as ImageIcon, X } from 'lucide-react';
+import RichTextEditor from './RichTextEditor';
 
 const BlogManager = () => {
   const { articles, addArticle, updateArticle, deleteArticle, uploadFile } = useData();
@@ -71,7 +72,10 @@ const BlogManager = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!newArticle.title || !newArticle.category) return;
+    if(!newArticle.title || !newArticle.category || !newArticle.excerpt) {
+        alert("Please fill in all required fields (Title, Category, Excerpt).");
+        return;
+    }
 
     // Fallback image if empty
     const finalArticle = {
@@ -180,12 +184,20 @@ const BlogManager = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Excerpt</label>
-                <textarea required name="excerpt" value={newArticle.excerpt} onChange={handleChange} rows="3" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Brief summary..."></textarea>
+                <RichTextEditor
+                    value={newArticle.excerpt}
+                    onChange={(content) => setNewArticle(prev => ({ ...prev, excerpt: content }))}
+                    placeholder="Brief summary..."
+                />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Content</label>
-                <textarea name="content" value={newArticle.content} onChange={handleChange} rows="6" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Full article content (HTML supported)..."></textarea>
+                <RichTextEditor
+                    value={newArticle.content}
+                    onChange={(content) => setNewArticle(prev => ({ ...prev, content: content }))}
+                    placeholder="Full article content..."
+                />
               </div>
 
               <div className="space-y-2">
