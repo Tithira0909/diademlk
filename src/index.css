@@ -17,8 +17,8 @@
 .prose {
   overflow-wrap: break-word; /* Breaks long words (like URLs) if they overflow */
   word-wrap: break-word; /* Legacy support */
-  word-break: normal; /* Ensure words break only at allowed points (spaces) */
-  text-align: justify; /* Justify text for neat alignment */
+  word-break: break-word; /* Better than 'normal' for preventing overflow, but 'break-word' is deprecated in favor of overflow-wrap */
+  text-align: left; /* CHANGED: Remove justify to prevent weird spacing */
   max-width: 100%;
 }
 
@@ -26,9 +26,9 @@
 .force-wrap {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: normal;
-  white-space: normal; /* Normal wrapping, ignore extra whitespace */
-  text-align: justify;
+  word-break: break-word;
+  white-space: normal;
+  text-align: left; /* CHANGED: Remove justify */
   max-width: 100%;
 }
 

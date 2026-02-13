@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { FileText, MessageSquare, Users, TrendingUp, Sun, Moon } from 'lucide-react';
+import { FileText, MessageSquare, Users, TrendingUp, Sun, Moon, Check } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
@@ -19,7 +19,7 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 );
 
 const DashboardOverview = () => {
-  const { articles, inquiries, users, siteViews, settings, updateSettings } = useData();
+  const { articles, inquiries, users, siteViews, settings, updateSettings, loading } = useData();
 
   const handleThemeChange = async () => {
       const newTheme = settings.default_theme === 'light' ? 'dark' : 'light';
@@ -53,22 +53,27 @@ const DashboardOverview = () => {
       { name: 'Sun', inquiries: 1, articles: 0 },
   ];
 
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading Dashboard...</div>;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-800 font-artistic">Dashboard Overview</h1>
 
         {/* Default Theme Switch */}
-        <div className="flex items-center gap-4 bg-white p-2 rounded-lg border shadow-sm">
-             <span className="text-sm font-bold text-gray-600 uppercase tracking-widest">Default Website Theme:</span>
+        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border shadow-sm">
+             <div className="flex flex-col">
+                 <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Default Website Theme</span>
+                 <span className="text-[10px] text-gray-400">Visitors will see this theme first</span>
+             </div>
              <button
                 onClick={handleThemeChange}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-bold text-xs uppercase tracking-widest ${settings.default_theme === 'dark' ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-full transition-all font-bold text-xs uppercase tracking-widest border ${settings.default_theme === 'dark' ? 'bg-zinc-900 text-white border-zinc-700' : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'}`}
              >
                 {settings.default_theme === 'dark' ? (
-                    <> <Moon size={14} /> Dark Mode </>
+                    <> <Moon size={14} /> Dark Mode <Check size={14} className="ml-1 text-green-400" /> </>
                 ) : (
-                    <> <Sun size={14} /> Light Mode </>
+                    <> <Sun size={14} /> Light Mode <Check size={14} className="ml-1 text-green-600" /> </>
                 )}
              </button>
         </div>
