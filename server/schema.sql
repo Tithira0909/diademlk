@@ -74,3 +74,12 @@ INSERT INTO articles (title, category, excerpt, content, image, readTime, author
 ON DUPLICATE KEY UPDATE id=id;
 
 INSERT IGNORE INTO site_stats (id, views) VALUES (1, 0);
+
+-- Settings Table
+CREATE TABLE IF NOT EXISTS settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    default_theme ENUM('light', 'dark') DEFAULT 'light',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT IGNORE INTO settings (id, default_theme) VALUES (1, 'light');

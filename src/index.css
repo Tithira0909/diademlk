@@ -12,3 +12,21 @@
 .ql-font-montserrat {
   font-family: 'Montserrat', sans-serif;
 }
+
+/* Prose Responsiveness */
+.prose img, .prose video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.prose iframe {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 0.5rem;
+}
+
+.prose {
+  overflow-wrap: break-word;
+}

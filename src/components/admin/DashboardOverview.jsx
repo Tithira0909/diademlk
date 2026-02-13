@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { FileText, MessageSquare, Users, TrendingUp } from 'lucide-react';
+import { FileText, MessageSquare, Users, TrendingUp, Sun, Moon } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
@@ -19,7 +19,12 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 );
 
 const DashboardOverview = () => {
-  const { articles, inquiries, users, siteViews } = useData();
+  const { articles, inquiries, users, siteViews, settings, updateSettings } = useData();
+
+  const handleThemeChange = async () => {
+      const newTheme = settings.default_theme === 'light' ? 'dark' : 'light';
+      await updateSettings({ default_theme: newTheme });
+  };
 
   const stats = [
     { title: 'Total Articles', value: articles.length, icon: FileText, color: 'bg-blue-500' },
@@ -50,7 +55,24 @@ const DashboardOverview = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <h1 className="text-3xl font-bold text-gray-800 font-artistic">Dashboard Overview</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-800 font-artistic">Dashboard Overview</h1>
+
+        {/* Default Theme Switch */}
+        <div className="flex items-center gap-4 bg-white p-2 rounded-lg border shadow-sm">
+             <span className="text-sm font-bold text-gray-600 uppercase tracking-widest">Default Website Theme:</span>
+             <button
+                onClick={handleThemeChange}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-bold text-xs uppercase tracking-widest ${settings.default_theme === 'dark' ? 'bg-zinc-900 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+             >
+                {settings.default_theme === 'dark' ? (
+                    <> <Moon size={14} /> Dark Mode </>
+                ) : (
+                    <> <Sun size={14} /> Light Mode </>
+                )}
+             </button>
+        </div>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

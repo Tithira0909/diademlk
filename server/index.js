@@ -263,6 +263,36 @@ app.post('/api/views/increment', async (req, res) => {
     }
 });
 
+// --- Settings ---
+app.get('/api/settings', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT default_theme FROM settings WHERE id = 1');
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            // Should be seeded, but fallback just in case
+            res.json({ default_theme: 'light' });
+        }
+    } catch (error) {
+        console.error("Fetch Settings Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.put('/api/settings', authenticateToken, async (req, res) => {
+    const { default_theme } = req.body;
+    if (!['light', 'dark'].includes(default_theme)) {
+        return res.status(400).json({ message: 'Invalid theme value' });
+    }
+    try {
+        await db.query('UPDATE settings SET default_theme = ? WHERE id = 1', [default_theme]);
+        res.json({ default_theme });
+    } catch (error) {
+        console.error("Update Settings Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Handle SPA routing
 app.get('*', (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
