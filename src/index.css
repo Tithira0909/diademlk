@@ -15,9 +15,11 @@
 
 /* Prose Responsiveness */
 .prose {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
+  overflow-wrap: break-word; /* Breaks long words if they overflow */
+  word-wrap: break-word; /* Legacy support */
+  word-break: normal; /* Ensure words break only at allowed points (spaces, hyphens) */
+  text-align: justify; /* Justify text for neat alignment */
+  hyphens: auto; /* Enable hyphenation */
   max-width: 100%;
 }
 
@@ -25,8 +27,10 @@
 .force-wrap {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: break-word;
+  word-break: normal;
   white-space: pre-wrap; /* Preserves newlines but wraps */
+  text-align: justify;
+  hyphens: auto;
   max-width: 100%;
 }
 
