@@ -94,13 +94,11 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         {/* Logo Area */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavClick('home')}>
-          <div className={`w-10 h-10 border-2 rounded-sm flex items-center justify-center transition-transform group-hover:rotate-45 duration-500 ${isDark ? 'border-white bg-transparent' : 'border-black bg-transparent'}`}>
-            <span className={`font-artistic font-bold text-xl group-hover:-rotate-45 transition-transform duration-500 ${logoText}`}>D</span>
-          </div>
-          <div className="flex flex-col">
-            <span className={`font-artistic font-bold text-xl tracking-[0.2em] leading-none ${textColor}`}>DIADEM</span>
-            <span className={`text-[0.6rem] uppercase tracking-widest opacity-60 ${textColor}`}>Global Trade</span>
-          </div>
+          <img
+            src={isDark ? "/logo-white.png" : "/logo-black.png"}
+            alt="Diadem Logo"
+            className="h-14 object-contain transition-all duration-500"
+          />
         </div>
 
         {/* Desktop Nav */}
@@ -178,7 +176,7 @@ const ThreeBackground = ({ isDark }) => {
       color: isDark ? 0x444444 : 0xdddddd,
       wireframe: true,
       transparent: true,
-      opacity: 0.15
+      opacity: isDark ? 0.2 : 0.4
     });
     const globe = new THREE.Mesh(geometry, material);
     globeRef.current = globe;
@@ -332,66 +330,100 @@ const StatsStrip = ({ isDark }) => {
 
 // 6. Services & Values
 const ServiceCard = ({ icon: Icon, title, desc, imgPlaceholder, isDark }) => (
-  <div className={`group relative border overflow-hidden reveal ${isDark ? 'border-zinc-800 bg-zinc-900/30' : 'border-zinc-200 bg-zinc-50'}`}>
+  <div className={`group relative h-full flex flex-col border overflow-hidden transition-all duration-300 hover:shadow-xl ${isDark ? 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
+    
     {/* Image Area */}
-    <div className={`h-48 md:h-64 w-full relative overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-300'}`}>
+    <div className={`h-48 md:h-64 w-full relative overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`}>
+      {/* Placeholder / Image Logic */}
       <div className="absolute inset-0 flex items-center justify-center text-center p-4">
-        <span className={`text-xs uppercase tracking-widest font-bold opacity-30 ${isDark ? 'text-white' : 'text-black'}`}>
-          {imgPlaceholder}
+        {/* Simulating an image element for the effect */}
+        <div className={`w-full h-full absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110 opacity-40`} 
+             style={{ backgroundImage: `url('${imgPlaceholder}')`, backgroundColor: isDark ? '#27272a' : '#e4e4e7' }}>
+        </div>
+        <span className={`relative z-10 text-xs uppercase tracking-widest font-bold opacity-30 ${isDark ? 'text-white' : 'text-black'}`}>
+          {/* Fallback text if image fails to load */}
+          {title} Image
         </span>
       </div>
-      {/* Hover Overlay */}
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}></div>
+      
+      {/* Hover Overlay Gradient */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t ${isDark ? 'from-zinc-900 via-transparent to-transparent' : 'from-zinc-100 via-transparent to-transparent'}`}></div>
     </div>
 
     {/* Content Area */}
-    <div className="p-6 md:p-8 relative">
-      <div className={`absolute -top-6 right-8 w-12 h-12 flex items-center justify-center border transition-colors ${isDark ? 'bg-black border-zinc-700 text-white' : 'bg-white border-zinc-300 text-black'}`}>
-        <Icon size={20} />
+    <div className="p-6 md:p-8 relative flex flex-col flex-grow">
+      {/* Floating Icon Box */}
+      <div className={`absolute -top-6 right-8 w-14 h-14 flex items-center justify-center border shadow-sm transition-colors duration-300 ${isDark ? 'bg-zinc-950 border-zinc-700 text-blue-400' : 'bg-white border-zinc-200 text-blue-600'}`}>
+        <Icon size={24} strokeWidth={1.5} />
       </div>
-      <h3 className={`font-artistic text-xl md:text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-zinc-900'}`}>{title}</h3>
-      <p className={`text-sm mb-6 leading-relaxed text-justify ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>{desc}</p>
-      <button className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
+
+      <h3 className={`font-artistic text-xl md:text-2xl font-bold mb-4 mt-2 ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+        {title}
+      </h3>
+      
+      <p className={`text-sm mb-8 leading-relaxed text-justify flex-grow ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+        {desc}
+      </p>
+
+      {/* Button */}
+      <button className={`w-max text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all group-hover:gap-4 ${isDark ? 'text-white group-hover:text-blue-400' : 'text-zinc-900 group-hover:text-blue-600'}`}>
         Explore Service <ChevronRight size={14} />
       </button>
     </div>
   </div>
 );
 
-const Services = ({ isDark }) => (
-  <section className={`py-20 md:py-32 relative z-10 ${isDark ? 'bg-zinc-950' : 'bg-white'}`}>
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16 md:mb-24 reveal">
-        <h2 className={`font-artistic text-3xl md:text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-zinc-900'}`}>Comprehensive Infrastructure</h2>
-        <div className={`w-24 h-1 mx-auto ${isDark ? 'bg-white' : 'bg-black'}`}></div>
-      </div>
+const Services = ({ isDark }) => {
+  const servicesData = [
+    {
+      icon: BookOpen,
+      title: "Academy & Training",
+      desc: "Empower local entrepreneurs with knowledge. comprehensive courses on Import/Export procedures designed to help you navigate and reach the global market with confidence.",
+      img: "/images/training.jpg"
+    },
+    {
+      icon: Briefcase,
+      title: "Export Consultancy",
+      desc: "Full management solutions: Business registration (BR, TIN), Customs registration, Buyer/Seller verification, and seamless Shipping Agent coordination.",
+      img: "/images/consultation.jpg"
+    },
+    {
+      icon: Truck,
+      title: "Global Logistics",
+      desc: "End-to-end logistic solutions. From complex Customs clearance to reliable Door-to-Door delivery services tailored specifically to your cargo requirements.",
+      img: "/images/logistics.jpg" // Fixed typo here
+    }
+  ];
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <ServiceCard
-          isDark={isDark}
-          icon={BookOpen}
-          title="Academy & Training"
-          desc="Empower local entrepreneurs with knowledge. Courses on Import/Export procedures designed to help you reach the global market."
-          imgPlaceholder="[Image: Training Session]"
-        />
-        <ServiceCard
-          isDark={isDark}
-          icon={Briefcase}
-          title="Export Consultancy"
-          desc="Full management: Business registration (BR, TIN), Customs registration, Buyer/Seller verification, and Shipping Agent coordination."
-          imgPlaceholder="[Image: Consultation]"
-        />
-        <ServiceCard
-          isDark={isDark}
-          icon={Truck}
-          title="Global Logistics"
-          desc="All kinds of logistic solutions. From Customs clearance to Door-to-Door delivery services tailored to your requirements."
-          imgPlaceholder="[Image: Logistics/Port]"
-        />
+  return (
+    <section className={`py-20 md:py-32 relative z-10 ${isDark ? 'bg-zinc-950' : 'bg-white'}`}>
+      <div className="max-w-7xl mx-auto px-6">
+        
+        {/* Section Header */}
+        <div className="text-center mb-16 md:mb-24 reveal">
+          <h2 className={`font-artistic text-3xl md:text-5xl font-bold mb-6 ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+            Comprehensive Infrastructure
+          </h2>
+          <div className={`w-24 h-1.5 mx-auto rounded-full ${isDark ? 'bg-blue-500' : 'bg-blue-600'}`}></div>
+        </div>
+
+        {/* Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {servicesData.map((service, index) => (
+            <ServiceCard
+              key={index}
+              isDark={isDark}
+              icon={service.icon}
+              title={service.title}
+              desc={service.desc}
+              imgPlaceholder={service.img}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 // 7. Phase 2 Previews (High End)
 const FeaturePreview = ({ id, title, subtitle, features, isDark, align = 'left' }) => {
@@ -563,7 +595,7 @@ const Footer = ({ isDark }) => {
 // --- MAIN APP ---
 const App = () => {
   const [activeTab, setActiveTab] = useState('home');
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useScrollReveal();
 
