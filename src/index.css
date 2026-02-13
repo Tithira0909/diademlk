@@ -17,19 +17,21 @@
 .prose {
   overflow-wrap: break-word; /* Breaks long words (like URLs) if they overflow */
   word-wrap: break-word; /* Legacy support */
-  word-break: break-word; /* Better than 'normal' for preventing overflow, but 'break-word' is deprecated in favor of overflow-wrap */
-  text-align: left; /* CHANGED: Remove justify to prevent weird spacing */
+  word-break: normal; /* CHANGED: Revert to normal. Do not force break words unless necessary. */
+  text-align: left;
   max-width: 100%;
+  hyphens: manual; /* Prevent auto-hyphenation which might be splitting words unexpectedly */
 }
 
 /* Generic utility to force wrapping */
 .force-wrap {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: break-word;
+  word-break: normal; /* CHANGED: Revert to normal */
   white-space: normal;
-  text-align: left; /* CHANGED: Remove justify */
+  text-align: left;
   max-width: 100%;
+  hyphens: manual;
 }
 
 .force-wrap * {
