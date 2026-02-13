@@ -15,11 +15,10 @@
 
 /* Prose Responsiveness */
 .prose {
-  overflow-wrap: break-word; /* Breaks long words if they overflow */
+  overflow-wrap: break-word; /* Breaks long words (like URLs) if they overflow */
   word-wrap: break-word; /* Legacy support */
-  word-break: normal; /* Ensure words break only at allowed points (spaces, hyphens) */
+  word-break: normal; /* Ensure words break only at allowed points (spaces) */
   text-align: justify; /* Justify text for neat alignment */
-  hyphens: auto; /* Enable hyphenation */
   max-width: 100%;
 }
 
@@ -28,9 +27,8 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: normal;
-  white-space: pre-wrap; /* Preserves newlines but wraps */
+  white-space: normal; /* Normal wrapping, ignore extra whitespace */
   text-align: justify;
-  hyphens: auto;
   max-width: 100%;
 }
 
@@ -43,11 +41,6 @@
 .prose * {
   max-width: 100%;
   overflow-wrap: break-word;
-}
-
-/* Force wrapping even if inline styles say otherwise */
-.prose p, .prose div, .prose span, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  white-space: pre-wrap !important; /* Preserves whitespace but wraps */
 }
 
 /* Images and Videos */
@@ -64,7 +57,7 @@
   border-radius: 0.5rem;
 }
 
-/* Fix for pre tags if they exist */
+/* Fix for pre tags if they exist - explicit pre-wrap */
 .prose pre {
   white-space: pre-wrap;
   word-wrap: break-word;
