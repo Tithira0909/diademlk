@@ -36,8 +36,8 @@ const ArticleViewer = () => {
                 <span>•</span>
                 <span>{article.date}</span>
             </div>
-            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
-            <div className={`text-xl leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`} dangerouslySetInnerHTML={{ __html: article.excerpt }} />
+            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6 force-wrap">{article.title}</h1>
+            <div className={`text-xl leading-relaxed force-wrap max-w-full overflow-hidden ${isDark ? 'text-gray-400' : 'text-gray-600'}`} dangerouslySetInnerHTML={{ __html: article.excerpt }} />
         </div>
 
         {/* PDF Viewer or Content */}

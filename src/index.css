@@ -21,6 +21,20 @@
   max-width: 100%;
 }
 
+/* Generic utility to force wrapping */
+.force-wrap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap; /* Preserves newlines but wraps */
+  max-width: 100%;
+}
+
+.force-wrap * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
 /* Ensure no elements inside prose exceed width */
 .prose * {
   max-width: 100%;
