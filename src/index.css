@@ -18,7 +18,8 @@
   overflow-wrap: break-word; /* Prevents horizontal scroll for very long words/URLs */
   word-wrap: break-word;
   word-break: normal; /* STRICT: Never break words mid-string unless line is too narrow for one word */
-  text-align: justify; /* Adjusted spacing as requested */
+  white-space: pre-wrap; /* STRICT: Respects line breaks and spaces from the editor */
+  text-align: left; /* STRICT: Reverting to left align to respect the editor's formatting exactly */
   max-width: 100%;
   hyphens: none !important; /* STRICT: No hyphenation allowed */
   -webkit-hyphens: none !important;
@@ -30,8 +31,8 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: normal;
-  white-space: normal;
-  text-align: justify; /* Adjusted spacing */
+  white-space: pre-wrap; /* Respects formatting */
+  text-align: left;
   max-width: 100%;
   hyphens: none !important;
   -webkit-hyphens: none !important;
@@ -43,6 +44,7 @@
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: none !important;
+  white-space: pre-wrap;
 }
 
 /* Ensure no elements inside prose exceed width */
