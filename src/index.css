@@ -15,34 +15,42 @@
 
 /* Prose Responsiveness */
 .prose {
-  overflow-wrap: break-word; /* Breaks long words (like URLs) if they overflow */
-  word-wrap: break-word; /* Legacy support */
-  word-break: normal; /* CHANGED: Revert to normal. Do not force break words unless necessary. */
-  text-align: left;
+  overflow-wrap: break-word; /* Prevents horizontal scroll for very long words/URLs */
+  word-wrap: break-word;
+  word-break: normal; /* STRICT: Never break words mid-string unless line is too narrow for one word */
+  text-align: justify; /* Adjusted spacing as requested */
   max-width: 100%;
-  hyphens: manual; /* Prevent auto-hyphenation which might be splitting words unexpectedly */
+  hyphens: none !important; /* STRICT: No hyphenation allowed */
+  -webkit-hyphens: none !important;
+  -ms-hyphens: none !important;
 }
 
 /* Generic utility to force wrapping */
 .force-wrap {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: normal; /* CHANGED: Revert to normal */
+  word-break: normal;
   white-space: normal;
-  text-align: left;
+  text-align: justify; /* Adjusted spacing */
   max-width: 100%;
-  hyphens: manual;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  -ms-hyphens: none !important;
 }
 
 .force-wrap * {
   max-width: 100%;
   overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none !important;
 }
 
 /* Ensure no elements inside prose exceed width */
 .prose * {
   max-width: 100%;
   overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none !important;
 }
 
 /* Images and Videos */
@@ -50,6 +58,8 @@
   max-width: 100%;
   height: auto;
   border-radius: 0.5rem;
+  display: block;
+  margin: 1rem auto;
 }
 
 .prose iframe {
@@ -64,4 +74,5 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-x: auto;
+  text-align: left; /* Code blocks should stay left-aligned */
 }
