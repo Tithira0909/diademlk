@@ -4,6 +4,7 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Download, FileText, AlertCircle } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
+import DOMPurify from 'dompurify';
 
 const ArticleViewer = () => {
   const { id } = useParams();
@@ -37,7 +38,10 @@ const ArticleViewer = () => {
                 <span>{article.date}</span>
             </div>
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
-            <div className={`text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`} dangerouslySetInnerHTML={{ __html: article.excerpt }} />
+            <div
+                className={`text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt) }}
+            />
         </div>
 
         {/* PDF Viewer or Content */}
@@ -75,7 +79,10 @@ const ArticleViewer = () => {
         ) : (
             <div className={`prose prose-lg max-w-none break-words [&>*]:max-w-full ${isDark ? 'prose-invert' : ''}`}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
-                 <div className="break-words [&>*]:max-w-full" dangerouslySetInnerHTML={{ __html: article.content }} />
+                 <div
+                    className="break-words [&>*]:max-w-full"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
+                 />
             </div>
         )}
       </div>
