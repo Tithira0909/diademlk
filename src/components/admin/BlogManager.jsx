@@ -10,8 +10,8 @@ const BlogManager = () => {
   const [newArticle, setNewArticle] = useState({
     title: '',
     category: '',
-    excerpt: '',
-    content: '',
+    excerptHtml: '',
+    contentHtml: '',
     image: '',
     readTime: '5 min read',
     author: 'Admin',
@@ -45,8 +45,8 @@ const BlogManager = () => {
     setNewArticle({
         title: article.title,
         category: article.category,
-        excerpt: article.excerpt,
-        content: article.content || '',
+        excerptHtml: article.excerpt,
+        contentHtml: article.content || '',
         image: article.image,
         readTime: article.readTime || '5 min read',
         author: article.author || 'Admin',
@@ -61,8 +61,8 @@ const BlogManager = () => {
     setNewArticle({
         title: '',
         category: '',
-        excerpt: '',
-        content: '',
+        excerptHtml: '',
+        contentHtml: '',
         image: '',
         readTime: '5 min read',
         author: 'Admin',
@@ -72,8 +72,8 @@ const BlogManager = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!newArticle.title || !newArticle.category || !newArticle.excerpt) {
-        alert("Please fill in all required fields (Title, Category, Excerpt).");
+    if(!newArticle.title || !newArticle.category) {
+        alert("Please fill in all required fields (Title, Category).");
         return;
     }
 
@@ -81,7 +81,8 @@ const BlogManager = () => {
     const finalArticle = {
         ...newArticle,
         image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        content: newArticle.content
+        contentHtml: newArticle.contentHtml,
+        excerptHtml: newArticle.excerptHtml
     };
 
     let success;
@@ -185,8 +186,8 @@ const BlogManager = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Excerpt</label>
                 <RichTextEditor
-                    value={newArticle.excerpt}
-                    onChange={(content) => setNewArticle(prev => ({ ...prev, excerpt: content }))}
+                    value={newArticle.excerptHtml}
+                    onChange={(content) => setNewArticle(prev => ({ ...prev, excerptHtml: content }))}
                     placeholder="Brief summary..."
                 />
               </div>
@@ -194,8 +195,8 @@ const BlogManager = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Content</label>
                 <RichTextEditor
-                    value={newArticle.content}
-                    onChange={(content) => setNewArticle(prev => ({ ...prev, content: content }))}
+                    value={newArticle.contentHtml}
+                    onChange={(content) => setNewArticle(prev => ({ ...prev, contentHtml: content }))}
                     placeholder="Full article content..."
                 />
               </div>

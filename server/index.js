@@ -114,27 +114,41 @@ app.get('/api/articles', async (req, res) => {
 });
 
 app.post('/api/articles', authenticateToken, async (req, res) => {
-  const { title, category, excerpt, content, image, pdfUrl, readTime, author } = req.body;
+  const { title, category, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
+
+  let finalExcerpt = excerptHtml;
+  // Auto-generate excerpt if empty
+  if (!finalExcerpt && contentHtml) {
+      finalExcerpt = contentHtml.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
+  }
+
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
   try {
     const [result] = await db.query(
       'INSERT INTO articles (title, category, excerpt, content, image, pdfUrl, readTime, author, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [title, category, excerpt, content, image, pdfUrl, readTime, author, date]
+      [title, category, finalExcerpt, contentHtml, image, pdfUrl, readTime, author, date]
     );
-    res.status(201).json({ id: result.insertId, ...req.body, date });
+    res.status(201).json({ id: result.insertId, ...req.body, excerpt: finalExcerpt, content: contentHtml, date });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 app.put('/api/articles/:id', authenticateToken, async (req, res) => {
-  const { title, category, excerpt, content, image, pdfUrl, readTime, author } = req.body;
+  const { title, category, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
+
+  let finalExcerpt = excerptHtml;
+  // Auto-generate excerpt if empty
+  if (!finalExcerpt && contentHtml) {
+      finalExcerpt = contentHtml.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
+  }
+
   try {
     await db.query(
       'UPDATE articles SET title = ?, category = ?, excerpt = ?, content = ?, image = ?, pdfUrl = ?, readTime = ?, author = ? WHERE id = ?',
-      [title, category, excerpt, content, image, pdfUrl, readTime, author, req.params.id]
+      [title, category, finalExcerpt, contentHtml, image, pdfUrl, readTime, author, req.params.id]
     );
-    res.json({ id: req.params.id, ...req.body });
+    res.json({ id: req.params.id, ...req.body, excerpt: finalExcerpt, content: contentHtml });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

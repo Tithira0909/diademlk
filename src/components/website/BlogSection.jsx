@@ -2,12 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight, ChevronRight, FileText } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-
-const stripHtml = (html) => {
-    if (!html) return '';
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
-};
+import DOMPurify from 'dompurify';
 
 const BlogCard = ({ post, isDark }) => (
     <Link
@@ -50,9 +45,10 @@ const BlogCard = ({ post, isDark }) => (
                 {post.title}
             </h3>
 
-            <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
-                {stripHtml(post.excerpt)}
-            </p>
+            <div
+                className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt) }}
+            />
 
             <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
                 Read Article <ArrowRight size={14} />
