@@ -47,7 +47,7 @@ const BlogCard = ({ post, isDark }) => (
 
             <div
                 className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt, { ADD_ATTR: ['style', 'class'] }) }}
             />
 
             <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>

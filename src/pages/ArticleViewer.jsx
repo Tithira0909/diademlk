@@ -40,7 +40,8 @@ const ArticleViewer = () => {
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
             <div
                 className={`text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt) }}
+                style={{ wordBreak: 'normal', hyphens: 'manual' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt, { ADD_ATTR: ['style', 'class', 'target'] }) }}
             />
         </div>
 
@@ -77,11 +78,12 @@ const ArticleViewer = () => {
                  </div>
             </div>
         ) : (
-            <div className={`prose prose-lg max-w-none break-words [&>*]:max-w-full ${isDark ? 'prose-invert' : ''}`}>
+            <div className={`prose prose-lg max-w-none break-words [&>*]:max-w-full ${isDark ? 'prose-invert' : ''}`} style={{ wordBreak: 'normal', hyphens: 'manual' }}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
                  <div
                     className="break-words [&>*]:max-w-full"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
+                    style={{ wordBreak: 'normal', hyphens: 'manual' }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content, { ADD_ATTR: ['style', 'class', 'target'] }) }}
                  />
             </div>
         )}

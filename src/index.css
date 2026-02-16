@@ -2,13 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Quill Font Classes */
-.ql-font-roboto {
-  font-family: 'Roboto', sans-serif;
-}
-.ql-font-lato {
-  font-family: 'Lato', sans-serif;
-}
-.ql-font-montserrat {
-  font-family: 'Montserrat', sans-serif;
+/* Custom Utilities */
+.prose {
+    hyphens: manual;
 }
