@@ -78,11 +78,10 @@ const ArticleViewer = () => {
                  </div>
             </div>
         ) : (
-            <div className={`prose prose-lg max-w-none break-words [&>*]:max-w-full ${isDark ? 'prose-invert' : ''}`} style={{ wordBreak: 'normal', hyphens: 'manual' }}>
+            <div className={`tinymce-body ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
                  <div
                     className="break-words [&>*]:max-w-full"
-                    style={{ wordBreak: 'normal', hyphens: 'manual' }}
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content, { ADD_ATTR: ['style', 'class', 'target'] }) }}
                  />
             </div>

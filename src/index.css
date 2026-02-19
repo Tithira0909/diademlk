@@ -5,54 +5,95 @@
 /* Custom Utilities */
 .prose {
     hyphens: manual;
+    /* Basic backup styles for excerpts/previews that still use prose */
+    word-break: normal;
 }
 
-/* Ensure Lists are visible in prose content */
-.prose ul, .prose ol {
-    padding-left: 2rem !important; /* Ensure indentation is always visible */
-    margin-top: 1em !important;
-    margin-bottom: 1em !important;
-    list-style-position: outside !important; /* Ensure bullets are outside text block */
+/* TinyMCE Content Styles (Mirroring Editor) */
+.tinymce-body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: inherit; /* Inherit form dark/light mode wrapper */
 }
 
-/* Default list styles */
-.prose ul {
-    list-style-type: disc !important;
-}
-.prose ol {
-    list-style-type: decimal !important;
+/* Reset default block spacing to match editor */
+.tinymce-body p {
+    margin-bottom: 1em;
+    margin-top: 0;
 }
 
-/* Nested Lists - Ensure Indentation Stacks */
-.prose ul ul, .prose ol ul, .prose ul ol, .prose ol ol {
-    margin-top: 0.5em !important;
-    margin-bottom: 0.5em !important;
-    padding-left: 2rem !important; /* Nested lists get their own padding, creating visible indentation */
+.tinymce-body h1, .tinymce-body h2, .tinymce-body h3, .tinymce-body h4, .tinymce-body h5, .tinymce-body h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+    line-height: 1.2;
 }
 
-/* Nested List Style Types */
-.prose ul ul, .prose ol ul {
-    list-style-type: circle !important;
-}
-.prose ol ol, .prose ul ol {
-    list-style-type: lower-alpha !important;
+.tinymce-body h1 { font-size: 2em; }
+.tinymce-body h2 { font-size: 1.5em; }
+.tinymce-body h3 { font-size: 1.17em; }
+
+/* Links */
+.tinymce-body a {
+    color: #3b82f6; /* Blue-500 */
+    text-decoration: underline;
 }
 
-/* 3rd Level Nesting */
-.prose ul ul ul, .prose ol ul ul {
-    list-style-type: square !important;
+/* Lists - Exact match for TinyMCE default content.css */
+.tinymce-body ul, .tinymce-body ol {
+    padding-left: 40px; /* TinyMCE standard indentation */
+    margin: 1em 0;
+    list-style-position: outside;
+}
+
+.tinymce-body ul {
+    list-style-type: disc;
+}
+
+.tinymce-body ol {
+    list-style-type: decimal;
+}
+
+/* Nested Lists */
+.tinymce-body ul ul, .tinymce-body ol ul, .tinymce-body ul ol, .tinymce-body ol ol {
+    margin: 0; /* TinyMCE removes margin for nested lists */
+}
+
+.tinymce-body ul ul, .tinymce-body ol ul {
+    list-style-type: circle;
+}
+
+.tinymce-body ul ul ul, .tinymce-body ol ul ul {
+    list-style-type: square;
 }
 
 /* List Items */
-.prose li {
-    margin-top: 0.25em !important;
-    margin-bottom: 0.25em !important;
-    padding-left: 0.5em !important; /* Small padding between bullet and text */
+.tinymce-body li {
+    margin-bottom: 0; /* TinyMCE relies on line-height */
 }
 
-/* Ensure indentation via inline styles (TinyMCE specific) works */
-/* TinyMCE adds style="padding-left: 40px;" to p, ul, ol for indentation */
-/* We need to make sure our CSS doesn't completely override it if it's larger */
-/* But since we want to FORCE visibility, the above rules set a baseline. */
-/* If TinyMCE adds MORE padding via inline styles, that usually wins over CSS unless !important is used. */
-/* However, for list structure, the nested padding above is crucial. */
+/* Images */
+.tinymce-body img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Avoid inline gap */
+}
+
+/* Blockquotes */
+.tinymce-body blockquote {
+    border-left: 4px solid #e5e7eb;
+    margin-left: 0;
+    padding-left: 1em;
+    font-style: italic;
+}
+
+/* Tables */
+.tinymce-body table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.tinymce-body td, .tinymce-body th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
