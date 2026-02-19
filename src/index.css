@@ -9,20 +9,47 @@
 
 /* Ensure Lists are visible in prose content */
 .prose ul, .prose ol {
-    padding-left: 1.5rem !important;
-    margin-top: 1em !important;
-    margin-bottom: 1em !important;
+    /* Set default padding/margin but allow inline styles to override */
+    padding-left: 1.5rem;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    /* Ensure bullets are outside the text block */
+    list-style-position: outside;
 }
 
+/* Default list styles for top level */
 .prose ul {
-    list-style-type: disc !important;
+    list-style-type: disc;
 }
-
 .prose ol {
-    list-style-type: decimal !important;
+    list-style-type: decimal;
 }
 
+/* Nested List Styles (Level 2) */
+.prose ul ul, .prose ol ul {
+    list-style-type: circle;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+.prose ol ol, .prose ul ol {
+    list-style-type: lower-alpha;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Nested List Styles (Level 3) */
+.prose ul ul ul, .prose ol ul ul {
+    list-style-type: square;
+}
+
+/* Ensure list items have spacing but respect inline styles */
 .prose li {
-    margin-top: 0.5em !important;
-    margin-bottom: 0.5em !important;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 0.5em; /* Add slight padding for content inside list item */
+}
+
+/* Ensure indentation via margin/padding is respected */
+.prose p {
+    margin-bottom: 1em;
 }
