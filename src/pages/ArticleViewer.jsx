@@ -39,7 +39,7 @@ const ArticleViewer = () => {
             </div>
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
             <div
-                className={`text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`tinymce-content text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
                 style={{ wordBreak: 'normal', hyphens: 'manual' }}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt, { ADD_ATTR: ['style', 'class', 'target'] }) }}
             />
@@ -78,7 +78,7 @@ const ArticleViewer = () => {
                  </div>
             </div>
         ) : (
-            <div className={`article-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+            <div className={`tinymce-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
                  <div
                     className="break-words [&>*]:max-w-full"

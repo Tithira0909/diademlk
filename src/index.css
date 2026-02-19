@@ -7,67 +7,67 @@
     hyphens: manual;
 }
 
-/* Article Content - Generic WYSIWYG reset */
-.article-content {
+/* TinyMCE Content Viewer - Mirrors editor content_style */
+.tinymce-content {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 16px;
     line-height: 1.6;
     color: inherit;
-    word-break: normal; /* Fix user complaint about word breaks */
+    word-break: normal;
+    overflow-wrap: break-word;
 }
 
-/* Lists - Robust Styling */
-.article-content ul, .article-content ol {
-    margin: 1em 0;
-    padding-left: 40px; /* Standard indentation */
-    list-style-position: outside;
+/* Reset Lists from Tailwind Preflight */
+.tinymce-content ul {
+    list-style-type: disc !important;
+    list-style-position: outside !important;
+    padding-left: 2.5em !important;
+    margin: 1em 0 !important;
 }
 
-.article-content ul {
-    list-style-type: disc;
+.tinymce-content ol {
+    list-style-type: decimal !important;
+    list-style-position: outside !important;
+    padding-left: 2.5em !important;
+    margin: 1em 0 !important;
 }
 
-.article-content ol {
-    list-style-type: decimal;
+.tinymce-content li {
+    margin-bottom: 0.5em;
+    display: list-item !important; /* Force display list-item */
+    padding-left: 0 !important; /* Ensure no extra padding on LI */
 }
 
 /* Nested Lists */
-.article-content ul ul, .article-content ol ul {
-    list-style-type: circle;
+.tinymce-content ul ul, .tinymce-content ol ul {
+    list-style-type: circle !important;
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
 }
 
-.article-content ol ol, .article-content ul ol {
-    list-style-type: lower-alpha;
-}
-
-.article-content ul ul ul, .article-content ol ul ul {
-    list-style-type: square;
-}
-
-.article-content li {
-    margin-bottom: 0.5em;
+.tinymce-content ul ul ul, .tinymce-content ol ul ul {
+    list-style-type: square !important;
 }
 
 /* Headings */
-.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6 {
+.tinymce-content h1, .tinymce-content h2, .tinymce-content h3, .tinymce-content h4, .tinymce-content h5, .tinymce-content h6 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     font-weight: bold;
     line-height: 1.2;
 }
 
-.article-content h1 { font-size: 2em; }
-.article-content h2 { font-size: 1.5em; }
-.article-content h3 { font-size: 1.17em; }
+.tinymce-content h1 { font-size: 2em; }
+.tinymce-content h2 { font-size: 1.5em; }
+.tinymce-content h3 { font-size: 1.17em; }
 
 /* Links */
-.article-content a {
+.tinymce-content a {
     color: #3b82f6;
     text-decoration: underline;
 }
 
 /* Images */
-.article-content img {
+.tinymce-content img {
     max-width: 100%;
     height: auto;
     display: block;
@@ -75,7 +75,7 @@
 }
 
 /* Blockquotes */
-.article-content blockquote {
+.tinymce-content blockquote {
     border-left: 4px solid #e5e7eb;
     margin-left: 0;
     padding-left: 1em;
@@ -84,16 +84,13 @@
 }
 
 /* Tables */
-.article-content table {
+.tinymce-content table {
     border-collapse: collapse;
     width: 100%;
     margin: 1em 0;
 }
 
-.article-content td, .article-content th {
+.tinymce-content td, .tinymce-content th {
     border: 1px solid #ddd;
     padding: 8px;
 }
-
-/* Jodit Specific Overrides if needed */
-/* Usually Jodit output is standard HTML, so the above should cover it perfectly. */
