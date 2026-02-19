@@ -5,95 +5,95 @@
 /* Custom Utilities */
 .prose {
     hyphens: manual;
-    /* Basic backup styles for excerpts/previews that still use prose */
-    word-break: normal;
 }
 
-/* TinyMCE Content Styles (Mirroring Editor) */
-.tinymce-body {
+/* Article Content - Generic WYSIWYG reset */
+.article-content {
     font-family: Helvetica, Arial, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.6;
-    color: inherit; /* Inherit form dark/light mode wrapper */
+    color: inherit;
+    word-break: normal; /* Fix user complaint about word breaks */
 }
 
-/* Reset default block spacing to match editor */
-.tinymce-body p {
-    margin-bottom: 1em;
-    margin-top: 0;
+/* Lists - Robust Styling */
+.article-content ul, .article-content ol {
+    margin: 1em 0;
+    padding-left: 40px; /* Standard indentation */
+    list-style-position: outside;
 }
 
-.tinymce-body h1, .tinymce-body h2, .tinymce-body h3, .tinymce-body h4, .tinymce-body h5, .tinymce-body h6 {
+.article-content ul {
+    list-style-type: disc;
+}
+
+.article-content ol {
+    list-style-type: decimal;
+}
+
+/* Nested Lists */
+.article-content ul ul, .article-content ol ul {
+    list-style-type: circle;
+}
+
+.article-content ol ol, .article-content ul ol {
+    list-style-type: lower-alpha;
+}
+
+.article-content ul ul ul, .article-content ol ul ul {
+    list-style-type: square;
+}
+
+.article-content li {
+    margin-bottom: 0.5em;
+}
+
+/* Headings */
+.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     font-weight: bold;
     line-height: 1.2;
 }
 
-.tinymce-body h1 { font-size: 2em; }
-.tinymce-body h2 { font-size: 1.5em; }
-.tinymce-body h3 { font-size: 1.17em; }
+.article-content h1 { font-size: 2em; }
+.article-content h2 { font-size: 1.5em; }
+.article-content h3 { font-size: 1.17em; }
 
 /* Links */
-.tinymce-body a {
-    color: #3b82f6; /* Blue-500 */
+.article-content a {
+    color: #3b82f6;
     text-decoration: underline;
 }
 
-/* Lists - Exact match for TinyMCE default content.css */
-.tinymce-body ul, .tinymce-body ol {
-    padding-left: 40px; /* TinyMCE standard indentation */
-    margin: 1em 0;
-    list-style-position: outside;
-}
-
-.tinymce-body ul {
-    list-style-type: disc;
-}
-
-.tinymce-body ol {
-    list-style-type: decimal;
-}
-
-/* Nested Lists */
-.tinymce-body ul ul, .tinymce-body ol ul, .tinymce-body ul ol, .tinymce-body ol ol {
-    margin: 0; /* TinyMCE removes margin for nested lists */
-}
-
-.tinymce-body ul ul, .tinymce-body ol ul {
-    list-style-type: circle;
-}
-
-.tinymce-body ul ul ul, .tinymce-body ol ul ul {
-    list-style-type: square;
-}
-
-/* List Items */
-.tinymce-body li {
-    margin-bottom: 0; /* TinyMCE relies on line-height */
-}
-
 /* Images */
-.tinymce-body img {
+.article-content img {
     max-width: 100%;
     height: auto;
-    display: block; /* Avoid inline gap */
+    display: block;
+    margin: 1em 0;
 }
 
 /* Blockquotes */
-.tinymce-body blockquote {
+.article-content blockquote {
     border-left: 4px solid #e5e7eb;
     margin-left: 0;
     padding-left: 1em;
     font-style: italic;
+    color: #6b7280;
 }
 
 /* Tables */
-.tinymce-body table {
+.article-content table {
     border-collapse: collapse;
     width: 100%;
+    margin: 1em 0;
 }
-.tinymce-body td, .tinymce-body th {
+
+.article-content td, .article-content th {
     border: 1px solid #ddd;
     padding: 8px;
 }
+
+/* Jodit Specific Overrides if needed */
+/* Usually Jodit output is standard HTML, so the above should cover it perfectly. */

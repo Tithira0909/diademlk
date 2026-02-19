@@ -78,7 +78,7 @@ const ArticleViewer = () => {
                  </div>
             </div>
         ) : (
-            <div className={`tinymce-body ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+            <div className={`article-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
                  <div
                     className="break-words [&>*]:max-w-full"
