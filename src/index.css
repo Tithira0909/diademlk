@@ -9,47 +9,50 @@
 
 /* Ensure Lists are visible in prose content */
 .prose ul, .prose ol {
-    /* Set default padding/margin but allow inline styles to override */
-    padding-left: 1.5rem;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    /* Ensure bullets are outside the text block */
-    list-style-position: outside;
+    padding-left: 2rem !important; /* Ensure indentation is always visible */
+    margin-top: 1em !important;
+    margin-bottom: 1em !important;
+    list-style-position: outside !important; /* Ensure bullets are outside text block */
 }
 
-/* Default list styles for top level */
+/* Default list styles */
 .prose ul {
-    list-style-type: disc;
+    list-style-type: disc !important;
 }
 .prose ol {
-    list-style-type: decimal;
+    list-style-type: decimal !important;
 }
 
-/* Nested List Styles (Level 2) */
+/* Nested Lists - Ensure Indentation Stacks */
+.prose ul ul, .prose ol ul, .prose ul ol, .prose ol ol {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
+    padding-left: 2rem !important; /* Nested lists get their own padding, creating visible indentation */
+}
+
+/* Nested List Style Types */
 .prose ul ul, .prose ol ul {
-    list-style-type: circle;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    list-style-type: circle !important;
 }
 .prose ol ol, .prose ul ol {
-    list-style-type: lower-alpha;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    list-style-type: lower-alpha !important;
 }
 
-/* Nested List Styles (Level 3) */
+/* 3rd Level Nesting */
 .prose ul ul ul, .prose ol ul ul {
-    list-style-type: square;
+    list-style-type: square !important;
 }
 
-/* Ensure list items have spacing but respect inline styles */
+/* List Items */
 .prose li {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    padding-left: 0.5em; /* Add slight padding for content inside list item */
+    margin-top: 0.25em !important;
+    margin-bottom: 0.25em !important;
+    padding-left: 0.5em !important; /* Small padding between bullet and text */
 }
 
-/* Ensure indentation via margin/padding is respected */
-.prose p {
-    margin-bottom: 1em;
-}
+/* Ensure indentation via inline styles (TinyMCE specific) works */
+/* TinyMCE adds style="padding-left: 40px;" to p, ul, ol for indentation */
+/* We need to make sure our CSS doesn't completely override it if it's larger */
+/* But since we want to FORCE visibility, the above rules set a baseline. */
+/* If TinyMCE adds MORE padding via inline styles, that usually wins over CSS unless !important is used. */
+/* However, for list structure, the nested padding above is crucial. */
