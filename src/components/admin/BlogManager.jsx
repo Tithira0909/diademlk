@@ -81,13 +81,9 @@ const BlogManager = () => {
     const finalArticle = {
         ...newArticle,
         image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        content: newArticle.contentHtml,
-        excerpt: newArticle.excerptHtml
+        excerptHtml: newArticle.excerptHtml,
+        contentHtml: newArticle.contentHtml
     };
-
-    // Cleanup internal state keys
-    delete finalArticle.contentHtml;
-    delete finalArticle.excerptHtml;
 
     let success;
     if (editingId) {
