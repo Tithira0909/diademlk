@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { ghostService } from '../services/ghostService';
 
 const DataContext = createContext();
 
@@ -22,7 +23,7 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('diadem_currentUser'));
     if (storedUser) setCurrentUser(storedUser);
-    setLoading(false); // Initial load complete
+    // Don't set loading false here, wait for initial fetch
   }, []);
 
   // Fetch Initial Data (Public + Protected if logged in)
@@ -33,16 +34,16 @@ export const DataProvider = ({ children }) => {
             // We don't want to flicker loading on every render
             if (loading) setLoading(true);
 
-            const token = currentUser?.token;
-
-            // Articles are public
-            const articlesRes = await fetch(`${API_URL}/articles`);
-            if (articlesRes.ok) {
-                setArticles(await articlesRes.json());
-            } else {
-                console.error("Articles Fetch Failed:", articlesRes.status, await articlesRes.text());
+            // Fetch Articles from Ghost
+            try {
+                const ghostPosts = await ghostService.browsePosts();
+                setArticles(ghostPosts);
+            } catch (err) {
+                console.error("Ghost Fetch Failed:", err);
+                // Fallback to empty or local if needed, but for now just log
             }
 
+            // Fetch other data from local backend
             const bannersRes = await fetch(`${API_URL}/banners`);
             if (bannersRes.ok) setBanners(await bannersRes.json());
 
@@ -56,6 +57,9 @@ export const DataProvider = ({ children }) => {
             }
 
             // Protected Data
+            const token = currentUser?.token; // Use current user from state or closure? Better check state or localstorage again if needed, but dependency array handles it.
+            // Actually, currentUser is in dependency, so this runs on mount (null) and on login (user object)
+
             if (token) {
                  const headers = { 'Authorization': `Bearer ${token}` };
                  const inquiriesRes = await fetch(`${API_URL}/inquiries`, { headers });
@@ -85,56 +89,10 @@ export const DataProvider = ({ children }) => {
       } : { 'Content-Type': 'application/json' };
   };
 
-  // Articles
-  const addArticle = async (article) => {
-    try {
-        const res = await fetch(`${API_URL}/articles`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify(article)
-        });
-        if (res.ok) {
-            const newArticle = await res.json();
-            setArticles(prev => [newArticle, ...prev]);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error("Error adding article:", error);
-        return false;
-    }
-  };
-
-  const updateArticle = async (id, updatedArticle) => {
-      try {
-          const res = await fetch(`${API_URL}/articles/${id}`, {
-              method: 'PUT',
-              headers: getHeaders(),
-              body: JSON.stringify(updatedArticle)
-          });
-          if (res.ok) {
-              const data = await res.json();
-              setArticles(prev => prev.map(a => (a.id === id ? { ...a, ...data } : a)));
-              return true;
-          }
-          return false;
-      } catch (error) {
-          console.error("Error updating article:", error);
-          return false;
-      }
-  };
-
-  const deleteArticle = async (id) => {
-      try {
-          await fetch(`${API_URL}/articles/${id}`, {
-              method: 'DELETE',
-              headers: getHeaders()
-          });
-          setArticles(prev => prev.filter(a => a.id !== id));
-      } catch (error) {
-          console.error("Error deleting article:", error);
-      }
-  };
+  // Articles - Deprecated Local Actions (kept for safety or removed? User wants "Integrate Ghost")
+  // Since we are using Ghost, we can't "add" to it from here via Client API.
+  // We will remove the local add/update/delete article functions to avoid confusion.
+  // The Admin UI will link to Ghost Admin.
 
   // Inquiries
   const addInquiry = async (inquiry) => {
@@ -297,9 +255,6 @@ export const DataProvider = ({ children }) => {
       settings,
       currentUser,
       loading,
-      addArticle,
-      updateArticle,
-      deleteArticle,
       addInquiry,
       addUser,
       deleteUser,

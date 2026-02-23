@@ -6,24 +6,24 @@ import DOMPurify from 'dompurify';
 
 const BlogCard = ({ post, isDark }) => (
     <Link
-        to={`/article/${post.id}`}
+        to={`/article/${post.slug}`}
         className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
     >
         {/* Image Container */}
-        <div className="h-48 overflow-hidden relative">
-            <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
-                {post.category}
-            </div>
-            {post.pdfUrl && (
-                 <div className="absolute top-4 right-4 bg-red-500 text-white p-1 rounded">
-                     <FileText size={14} />
-                 </div>
+        <div className="h-48 overflow-hidden relative bg-gray-200">
+            {post.feature_image ? (
+                <img
+                    src={post.feature_image}
+                    alt={post.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">No Image</div>
             )}
+
+            <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
+                {post.primary_tag?.name || 'Insight'}
+            </div>
         </div>
 
         {/* Content */}
@@ -31,12 +31,13 @@ const BlogCard = ({ post, isDark }) => (
             <div className={`flex items-center gap-4 text-xs mb-3 ${isDark ? 'text-gray-500' : 'text-zinc-500'}`}>
                 <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    <span>{post.date}</span>
+                    {/* Ghost returns ISO date */}
+                    <span>{new Date(post.published_at).toLocaleDateString()}</span>
                 </div>
-                {post.readTime && (
+                {post.reading_time && (
                     <div className="flex items-center gap-1">
                         <Clock size={12} />
-                        <span>{post.readTime}</span>
+                        <span>{post.reading_time} min read</span>
                     </div>
                 )}
             </div>
@@ -61,7 +62,7 @@ const BlogSection = ({ isDark }) => {
     const { articles } = useData();
 
     // Limit to latest 3-4 articles or show all? Let's show up to 6
-    const displayedArticles = articles.slice(0, 6);
+    const displayedArticles = articles ? articles.slice(0, 6) : [];
 
     return (
         <section id="blogs" className={`py-20 md:py-32 relative z-10 ${isDark ? 'bg-zinc-950' : 'bg-zinc-50'}`}>

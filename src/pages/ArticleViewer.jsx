@@ -5,25 +5,37 @@ import { ArrowLeft, Download, FileText, AlertCircle, Facebook, Instagram, Linked
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
 import DOMPurify from 'dompurify';
+import { ghostService } from '../services/ghostService';
 
 const ArticleViewer = () => {
-  const { id } = useParams();
-  const { articles, settings } = useData();
+  const { id } = useParams(); // 'id' will now be the SLUG
+  const { settings } = useData();
   const [article, setArticle] = useState(null);
-  const [activeTab, setActiveTab] = useState('blogs'); // For Navbar highlighting
-  const [isDark, setIsDark] = useState(false); // Can be connected to context later or kept local
+  const [activeTab, setActiveTab] = useState('blogs');
+  const [isDark, setIsDark] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
   useEffect(() => {
-    // ID comes as string from router, but usually stored as number in data
-    const found = articles.find(a => a.id.toString() === id);
-    setArticle(found);
-  }, [id, articles]);
+    const fetchArticle = async () => {
+        try {
+            setLoading(true);
+            const data = await ghostService.readPost(id); // id is the slug
+            setArticle(data);
+        } catch (error) {
+            console.error("Failed to fetch article:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchArticle();
+  }, [id]);
 
-  if (!article) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
@@ -37,9 +49,9 @@ const ArticleViewer = () => {
         {/* Header */}
         <div className="mb-12">
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-blue-500 mb-4">
-                <span>{article.category}</span>
+                <span>{article.primary_tag?.name || 'Insight'}</span>
                 <span>•</span>
-                <span>{article.date}</span>
+                <span>{new Date(article.published_at).toLocaleDateString()}</span>
             </div>
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
 
@@ -72,53 +84,26 @@ const ArticleViewer = () => {
                 )}
             </div>
 
-            <div
-                className={`tinymce-content text-base md:text-lg lg:text-xl leading-relaxed [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt, { ADD_ATTR: ['style', 'class', 'target'] }) }}
-            />
+            {/* Excerpt if exists */}
+            {article.excerpt && (
+                <div className={`text-lg md:text-xl font-medium mb-8 leading-relaxed italic ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {article.excerpt}
+                </div>
+            )}
         </div>
 
-        {/* PDF Viewer or Content */}
-        {article.pdfUrl ? (
-            <div className="space-y-6">
-                 <div className="bg-gray-100 p-4 rounded-lg flex items-center justify-between border border-gray-200">
-                     <div className="flex items-center gap-3">
-                         <div className="bg-red-500 text-white p-2 rounded">
-                             <FileText size={24} />
-                         </div>
-                         <div>
-                             <p className="text-sm font-bold text-gray-800">Attached Document</p>
-                             <p className="text-xs text-gray-500">PDF Format</p>
-                         </div>
-                     </div>
-                     <a href={article.pdfUrl} download className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline">
-                         <Download size={16} /> Download
-                     </a>
-                 </div>
+        {/* Content */}
+        <div className={`ghost-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+             {article.feature_image && (
+                 <img src={article.feature_image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
+             )}
 
-                 {/* Iframe Viewer */}
-                 <div className="w-full h-[800px] border rounded-xl overflow-hidden shadow-lg bg-gray-50">
-                     <iframe
-                        src={article.pdfUrl}
-                        className="w-full h-full"
-                        title="PDF Viewer"
-                     >
-                        <div className="flex items-center justify-center h-full text-gray-500 gap-2">
-                             <AlertCircle />
-                             <p>Your browser does not support PDFs. <a href={article.pdfUrl} className="underline text-blue-500">Download the PDF</a> to view it.</p>
-                        </div>
-                     </iframe>
-                 </div>
-            </div>
-        ) : (
-            <div className={`tinymce-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-                 <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
-                 <div
-                    className="[&>*]:max-w-full"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content, { ADD_ATTR: ['style', 'class', 'target'] }) }}
-                 />
-            </div>
-        )}
+             {/* Ghost HTML Content */}
+             <div
+                className="[&>*]:max-w-full"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.html, { ADD_ATTR: ['style', 'class', 'target', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'] }) }}
+             />
+        </div>
       </div>
 
       <Footer isDark={isDark} />

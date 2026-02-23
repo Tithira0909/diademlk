@@ -1,246 +1,81 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useData } from '../../context/DataContext';
-import { Plus, Trash2, Edit2, FileText, Image as ImageIcon, X } from 'lucide-react';
-import RichTextEditor from './RichTextEditor';
+import { ExternalLink, Eye, Calendar, Tag } from 'lucide-react';
 
 const BlogManager = () => {
-  const { articles, addArticle, updateArticle, deleteArticle, uploadFile } = useData();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [newArticle, setNewArticle] = useState({
-    title: '',
-    category: '',
-    excerptHtml: '',
-    contentHtml: '',
-    image: '',
-    readTime: '5 min read',
-    author: 'Admin',
-    pdfUrl: ''
-  });
-  const [uploading, setUploading] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewArticle(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileUpload = async (e, field) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-          setUploading(true);
-          const data = await uploadFile(file);
-          setNewArticle(prev => ({ ...prev, [field]: data.url }));
-      } catch (error) {
-          console.error("Upload error:", error);
-          alert('Upload failed');
-      } finally {
-          setUploading(false);
-      }
-  };
-
-  const handleEdit = (article) => {
-    setEditingId(article.id);
-    setNewArticle({
-        title: article.title,
-        category: article.category,
-        excerptHtml: article.excerpt,
-        contentHtml: article.content || '',
-        image: article.image,
-        readTime: article.readTime || '5 min read',
-        author: article.author || 'Admin',
-        pdfUrl: article.pdfUrl || ''
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleClose = () => {
-    setIsModalOpen(false);
-    setEditingId(null);
-    setNewArticle({
-        title: '',
-        category: '',
-        excerptHtml: '',
-        contentHtml: '',
-        image: '',
-        readTime: '5 min read',
-        author: 'Admin',
-        pdfUrl: ''
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if(!newArticle.title || !newArticle.category) {
-        alert("Please fill in all required fields (Title, Category).");
-        return;
-    }
-
-    // Map internal state to API payload
-    const finalArticle = {
-        title: newArticle.title,
-        category: newArticle.category,
-        image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        excerpt: newArticle.excerptHtml,
-        content: newArticle.contentHtml,
-        readTime: newArticle.readTime,
-        author: newArticle.author,
-        pdfUrl: newArticle.pdfUrl
-    };
-
-    let success;
-    if (editingId) {
-        success = await updateArticle(editingId, finalArticle);
-    } else {
-        success = await addArticle(finalArticle);
-    }
-
-    if (success) {
-        handleClose();
-    } else {
-        alert('Failed to save article');
-    }
-  };
+  const { articles } = useData();
+  const ghostAdminUrl = import.meta.env.VITE_GHOST_API_URL ? `${import.meta.env.VITE_GHOST_API_URL.replace(/\/ghost\/api\/.*$/, '')}/ghost` : '#';
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800 font-artistic">Blog & Article Management</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 font-bold transition-all"
+        <div>
+            <h1 className="text-3xl font-bold text-gray-800 font-artistic">Blog & Article Management</h1>
+            <p className="text-gray-500 mt-2">Content is managed via Ghost CMS. Changes made there will reflect here automatically.</p>
+        </div>
+        <a
+          href={ghostAdminUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-black hover:bg-zinc-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
         >
-          <Plus size={18} /> Add New Article
-        </button>
+          <ExternalLink size={18} /> Open Ghost Admin
+        </a>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">PDF</th>
-              <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h2 className="font-bold text-gray-700">Published Articles ({articles.length})</h2>
+            <div className="text-xs font-bold uppercase tracking-widest text-gray-400">Synced from Ghost</div>
+        </div>
+
+        <div className="divide-y divide-gray-100">
             {articles.length === 0 ? (
-                <tr><td colSpan="5" className="p-8 text-center text-gray-500">No articles found.</td></tr>
+                <div className="p-12 text-center text-gray-400">
+                    <p>No articles found. Publish your first post in Ghost!</p>
+                </div>
             ) : (
                 articles.map(article => (
-                    <tr key={article.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded bg-gray-200 overflow-hidden flex-shrink-0">
-                                <img src={article.image} alt="" className="w-full h-full object-cover" />
+                    <div key={article.id} className="p-6 hover:bg-gray-50 transition-colors flex items-center gap-6 group">
+                        {/* Image */}
+                        <div className="w-24 h-24 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 relative">
+                            {article.feature_image ? (
+                                <img src={article.feature_image} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold">No Image</div>
+                            )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-grow min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest rounded bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
+                                    <Tag size={10} /> {article.primary_tag?.name || 'Uncategorized'}
+                                </span>
+                                <span className="text-xs text-gray-400 flex items-center gap-1">
+                                    <Calendar size={12} /> {new Date(article.published_at).toLocaleDateString()}
+                                </span>
                             </div>
-                            <span className="font-medium text-gray-800 line-clamp-1 max-w-[200px]">{article.title}</span>
+                            <h3 className="text-lg font-bold text-gray-800 mb-1 truncate">{article.title}</h3>
+                            <p className="text-sm text-gray-500 line-clamp-2">{article.excerpt}</p>
                         </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-3 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-600">
-                          {article.category}
-                        </span>
-                      </td>
-                      <td className="p-4 text-sm text-gray-600">{article.date}</td>
-                      <td className="p-4">
-                          {article.pdfUrl ? <span className="text-green-500 font-bold text-xs">Yes</span> : <span className="text-gray-400 text-xs">No</span>}
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEdit(article)} className="text-blue-400 hover:text-blue-600 p-2 transition-colors">
-                                <Edit2 size={18} />
-                            </button>
-                            <button onClick={() => deleteArticle(article.id)} className="text-red-400 hover:text-red-600 p-2 transition-colors">
-                                <Trash2 size={18} />
-                            </button>
+
+                        {/* Actions */}
+                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <a
+                                href={`/article/${article.slug}`}
+                                target="_blank"
+                                className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                                title="View Article"
+                             >
+                                <Eye size={20} />
+                             </a>
                         </div>
-                      </td>
-                    </tr>
+                    </div>
                 ))
             )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Add Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">{editingId ? 'Edit Article' : 'New Article'}</h2>
-              <button onClick={handleClose} className="text-gray-400 hover:text-black"><X /></button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-600">Title</label>
-                  <input required name="title" value={newArticle.title} onChange={handleChange} className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter title..." />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-600">Category</label>
-                  <input required name="category" value={newArticle.category} onChange={handleChange} className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Regulations" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-600">Excerpt</label>
-                <RichTextEditor
-                    value={newArticle.excerptHtml}
-                    onChange={(content) => setNewArticle(prev => ({ ...prev, excerptHtml: content }))}
-                    placeholder="Brief summary..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-600">Content</label>
-                <RichTextEditor
-                    value={newArticle.contentHtml}
-                    onChange={(content) => setNewArticle(prev => ({ ...prev, contentHtml: content }))}
-                    placeholder="Full article content..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                 <label className="text-sm font-bold text-gray-600">Cover Image</label>
-                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'image')} className="absolute inset-0 opacity-0 cursor-pointer" />
-                      {newArticle.image ? (
-                          <img src={newArticle.image} className="max-h-48 mx-auto rounded shadow-sm" alt="Preview" />
-                      ) : (
-                          <>
-                            <ImageIcon className="mx-auto text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-500">{uploading ? "Uploading..." : "Click to upload cover image"}</p>
-                          </>
-                      )}
-                  </div>
-              </div>
-
-              <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-600">Article PDF (Upload)</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                      <input type="file" accept="application/pdf" onChange={(e) => handleFileUpload(e, 'pdfUrl')} className="absolute inset-0 opacity-0 cursor-pointer" />
-                      <FileText className="mx-auto text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">
-                          {uploading ? "Uploading..." : (newArticle.pdfUrl ? <span className="text-green-600 font-bold">PDF Uploaded!</span> : "Click to upload PDF")}
-                      </p>
-                  </div>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={handleClose} className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
-                <button type="submit" disabled={uploading} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">
-                    {editingId ? 'Update Article' : 'Publish Article'}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

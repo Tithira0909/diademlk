@@ -7,149 +7,324 @@
     hyphens: none !important;
 }
 
-/* TinyMCE Content Viewer - Mirrors editor content_style */
-.tinymce-content {
-    font-family: Helvetica, Arial, sans-serif;
+/* Ghost Content Viewer - Koenig Editor Styles */
+.ghost-content {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Clean, standard font */
     line-height: 1.6;
     color: inherit;
-    /* Prevent unwanted mid-word splitting */
     word-break: normal;
-    overflow-wrap: break-word; /* Ensure long words wrap to next line if needed */
-    /* Preserve whitespace (spaces/newlines) exactly as typed in editor */
-    white-space: pre-wrap;
-    hyphens: none !important;
+    overflow-wrap: break-word;
+    /* Preserve whitespace for code blocks but handle normal text naturally */
+    white-space: normal;
 }
 
-/* Paragraph spacing to match editor default */
-.tinymce-content p {
-    margin-bottom: 1em;
-    margin-top: 0;
+/* Typography */
+.ghost-content p {
+    margin-bottom: 1.5em;
+    font-size: 1.125rem; /* 18px for readability */
 }
 
-/* Reset Lists from Tailwind Preflight */
-.tinymce-content ul {
-    list-style-type: disc !important;
-    list-style-position: outside !important;
-    /* Increase padding for visual separation on mobile */
-    padding-left: 1.5em !important;
-    margin: 1em 0 !important;
-}
-
-.tinymce-content ol {
-    list-style-type: decimal !important;
-    list-style-position: outside !important;
-    /* Increase padding for visual separation on mobile */
-    padding-left: 1.5em !important;
-    margin: 1em 0 !important;
-}
-
-.tinymce-content li {
-    margin-bottom: 0.1em; /* Tighten list spacing to match Word/Editor */
-    display: list-item !important; /* Force display list-item */
-    padding-left: 0.25em !important; /* Slight padding for bullet spacing */
-}
-
-/* Remove margins from paragraphs inside list items to prevent double spacing */
-.tinymce-content li p {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-}
-
-/* Nested Lists */
-.tinymce-content ul ul, .tinymce-content ol ul {
-    list-style-type: circle !important;
-    margin-top: 0.5em !important;
-    margin-bottom: 0.5em !important;
-}
-
-.tinymce-content ul ul ul, .tinymce-content ol ul ul {
-    list-style-type: square !important;
-}
-
-/* Headings */
-.tinymce-content h1, .tinymce-content h2, .tinymce-content h3, .tinymce-content h4, .tinymce-content h5, .tinymce-content h6 {
-    margin-top: 1.5em;
+.ghost-content h1, .ghost-content h2, .ghost-content h3, .ghost-content h4, .ghost-content h5, .ghost-content h6 {
+    margin-top: 2em;
     margin-bottom: 0.5em;
-    font-weight: bold;
+    font-weight: 700;
     line-height: 1.2;
+    color: inherit;
 }
 
-.tinymce-content h1 { font-size: 2em; }
-.tinymce-content h2 { font-size: 1.5em; }
-.tinymce-content h3 { font-size: 1.17em; }
+.ghost-content h1 { font-size: 2.5em; }
+.ghost-content h2 { font-size: 2em; }
+.ghost-content h3 { font-size: 1.5em; }
+.ghost-content h4 { font-size: 1.25em; }
 
-/* Links */
-.tinymce-content a {
-    color: #3b82f6;
+.ghost-content a {
+    color: #3b82f6; /* Blue-500 */
     text-decoration: underline;
+    transition: color 0.2s;
 }
 
-/* Images */
-.tinymce-content img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 1em 0;
+.ghost-content a:hover {
+    color: #2563eb; /* Blue-600 */
 }
 
-/* Blockquotes */
-.tinymce-content blockquote {
+.ghost-content blockquote {
     border-left: 4px solid #e5e7eb;
-    margin-left: 0;
-    padding-left: 1em;
+    margin: 1.5em 0;
+    padding-left: 1.5em;
     font-style: italic;
     color: #6b7280;
 }
 
+/* Lists - Critical for "MS Word" feel */
+.ghost-content ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+.ghost-content ol {
+    list-style-type: decimal;
+    padding-left: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+.ghost-content li {
+    margin-bottom: 0.5em;
+    padding-left: 0.5em;
+}
+
+/* Nested Lists */
+.ghost-content ul ul, .ghost-content ol ul {
+    list-style-type: circle;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.ghost-content ul ul ul {
+    list-style-type: square;
+}
+
+/* Ghost / Koenig Editor Specific Classes */
+
+/* Images */
+.ghost-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 2em auto;
+    display: block;
+}
+
+.kg-width-wide img {
+    max-width: 85vw; /* Break out of container slightly if needed */
+}
+
+.kg-width-full img {
+    max-width: 100vw;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    border-radius: 0;
+}
+
+/* Captions */
+.kg-image-card figcaption {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5em;
+}
+
+/* Galleries */
+.kg-gallery-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+}
+.kg-gallery-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.kg-gallery-image img {
+    display: block;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Embeds (YouTube, Twitter, etc.) */
+.kg-embed-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2em 0;
+    width: 100%;
+}
+
+.kg-embed-card iframe {
+    max-width: 100%;
+}
+
+/* Bookmark Cards (Ghost Feature) */
+.kg-bookmark-card {
+    width: 100%;
+    background: #fff; /* Force white background for bookmark */
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin: 1.5em 0;
+}
+
+.kg-bookmark-container {
+    display: flex;
+    text-decoration: none !important;
+    color: #111 !important;
+    min-height: 148px;
+}
+
+.kg-bookmark-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.kg-bookmark-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.3em;
+}
+
+.kg-bookmark-description {
+    font-size: 0.9rem;
+    line-height: 1.5em;
+    color: #6b7280;
+    margin-top: 0.5em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+.kg-bookmark-metadata {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #374151;
+    margin-top: 1em;
+}
+
+.kg-bookmark-icon {
+    width: 22px;
+    height: 22px;
+    margin-right: 8px;
+}
+
+.kg-bookmark-thumbnail {
+    position: relative;
+    min-width: 33%;
+    max-height: 100%;
+}
+
+.kg-bookmark-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin: 0; /* Override generic img margin */
+}
+
 /* Tables */
-.tinymce-content table {
+.ghost-content table {
     border-collapse: collapse;
     width: 100%;
-    margin: 1em 0;
-    overflow-x: auto; /* Allow horizontal scroll for wide tables */
-    display: block; /* Make table responsive container */
+    margin: 1.5em 0;
+    overflow-x: auto;
+    display: block;
 }
 
-.tinymce-content td, .tinymce-content th {
-    border: 1px solid #ddd;
-    padding: 8px;
+.ghost-content th, .ghost-content td {
+    border: 1px solid #e5e7eb;
+    padding: 0.75em;
+    text-align: left;
 }
 
-/* Blog Excerpt / Card Content Styles */
+.ghost-content th {
+    background-color: #f9fafb;
+    font-weight: 600;
+}
+
+/* HR */
+.ghost-content hr {
+    margin: 3em 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Code Blocks */
+.ghost-content pre {
+    background: #1f2937;
+    color: #e5e7eb;
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1.5em 0;
+}
+
+.ghost-content code {
+    background: #f3f4f6;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: monospace;
+}
+
+.ghost-content pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+
+/* Dark Mode Overrides for Content */
+.bg-black .ghost-content {
+    color: #d1d5db;
+}
+
+.bg-black .ghost-content a {
+    color: #60a5fa;
+}
+
+.bg-black .ghost-content a:hover {
+    color: #93c5fd;
+}
+
+.bg-black .ghost-content blockquote {
+    border-left-color: #374151;
+    color: #9ca3af;
+}
+
+.bg-black .ghost-content th {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+.bg-black .ghost-content td {
+    border-color: #374151;
+}
+
+.bg-black .kg-bookmark-card {
+    background: #18181b; /* Zinc-900 */
+    border-color: #3f3f46;
+}
+
+.bg-black .kg-bookmark-container {
+    color: #e4e4e7 !important;
+}
+
+.bg-black .kg-bookmark-description {
+    color: #a1a1aa;
+}
+
+.bg-black .kg-bookmark-metadata {
+    color: #d4d4d8;
+}
+
+/* Excerpt Styles (kept from before, just cleaned up) */
 .excerpt-content {
-    /* Ensure content stays within the card */
     overflow: hidden;
     word-break: normal;
     overflow-wrap: break-word;
 }
 
 .excerpt-content p {
-    margin-bottom: 0.5em; /* Reduce paragraph gap from browser default (1em) */
-    margin-top: 0;
-    line-height: inherit; /* Use card's line-height */
+    margin-bottom: 0.5em;
 }
 
-/* Ensure lists have bullets but are compact */
-.excerpt-content ul {
-    list-style-type: disc;
-    padding-left: 1.25em; /* Indent */
-    margin: 0.25em 0;
-}
-
-.excerpt-content ol {
-    list-style-type: decimal;
-    padding-left: 1.25em; /* Indent */
-    margin: 0.25em 0;
-}
-
-.excerpt-content li {
-    margin-bottom: 0.1em; /* Tight list items */
-    padding-left: 0;
-}
-
-/* Squash huge headings in excerpts */
-.excerpt-content h1, .excerpt-content h2, .excerpt-content h3, .excerpt-content h4 {
-    font-size: 1em; /* Force headings to match body text size */
-    font-weight: bold;
-    margin: 0.25em 0;
+.excerpt-content ul, .excerpt-content ol {
+    margin: 0.5em 0;
+    padding-left: 1.25em;
 }
