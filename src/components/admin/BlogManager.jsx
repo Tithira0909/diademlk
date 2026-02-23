@@ -77,12 +77,16 @@ const BlogManager = () => {
         return;
     }
 
-    // Fallback image if empty
+    // Map internal state to API payload
     const finalArticle = {
-        ...newArticle,
+        title: newArticle.title,
+        category: newArticle.category,
         image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        excerptHtml: newArticle.excerptHtml,
-        contentHtml: newArticle.contentHtml
+        excerpt: newArticle.excerptHtml,
+        content: newArticle.contentHtml,
+        readTime: newArticle.readTime,
+        author: newArticle.author,
+        pdfUrl: newArticle.pdfUrl
     };
 
     let success;

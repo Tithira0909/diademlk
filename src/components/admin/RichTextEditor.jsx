@@ -52,7 +52,7 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden border border-gray-300">
       <Editor
-        apiKey="y25huj6e01nnlwoo9naw9zjuwislr07f17419pr6ups9u41l"
+        apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
         onInit={(evt, editor) => editorRef.current = editor}
         value={value}
         onEditorChange={(newValue) => onChange(newValue)}
@@ -63,7 +63,7 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
             'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
-            'directionality'
+            'directionality', 'paste'
           ],
           toolbar: 'undo redo | blocks fontfamily fontsize | ' +
             'bold italic underline strikethrough | alignleft aligncenter ' +
@@ -93,7 +93,9 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
           placeholder: placeholder,
           paste_data_images: true,
           browser_spellcheck: true,
-          contextmenu: false
+          contextmenu: false,
+          paste_as_text: false, // Allow rich content paste from Word
+          smart_paste: true // Enhanced pasting
         }}
       />
     </div>

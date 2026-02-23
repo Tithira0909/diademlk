@@ -12,11 +12,11 @@
     font-family: Helvetica, Arial, sans-serif;
     line-height: 1.6;
     color: inherit;
-    /* Prevent unwanted word splitting */
+    /* Prevent unwanted mid-word splitting */
     word-break: normal;
-    overflow-wrap: break-word;
-    /* Remove pre-wrap to rely on HTML structure (TinyMCE) */
-    white-space: normal;
+    overflow-wrap: break-word; /* Ensure long words wrap to next line if needed */
+    /* Preserve whitespace (spaces/newlines) exactly as typed in editor */
+    white-space: pre-wrap;
     hyphens: none !important;
 }
 
