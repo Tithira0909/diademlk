@@ -73,7 +73,7 @@ const ArticleViewer = () => {
             </div>
 
             <div
-                className={`tinymce-content text-xl leading-relaxed [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
+                className={`tinymce-content text-base md:text-lg lg:text-xl leading-relaxed [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt, { ADD_ATTR: ['style', 'class', 'target'] }) }}
             />
         </div>

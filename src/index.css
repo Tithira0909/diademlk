@@ -15,8 +15,8 @@
     /* Prevent unwanted word splitting */
     word-break: normal;
     overflow-wrap: break-word;
-    /* Respect editor spacing exactly */
-    white-space: pre-wrap;
+    /* Remove pre-wrap to rely on HTML structure (TinyMCE) */
+    white-space: normal;
     hyphens: none !important;
 }
 
@@ -24,21 +24,23 @@
 .tinymce-content ul {
     list-style-type: disc !important;
     list-style-position: outside !important;
-    padding-left: 2.5em !important;
+    /* Increase padding for visual separation on mobile */
+    padding-left: 1.5em !important;
     margin: 1em 0 !important;
 }
 
 .tinymce-content ol {
     list-style-type: decimal !important;
     list-style-position: outside !important;
-    padding-left: 2.5em !important;
+    /* Increase padding for visual separation on mobile */
+    padding-left: 1.5em !important;
     margin: 1em 0 !important;
 }
 
 .tinymce-content li {
     margin-bottom: 0.5em;
     display: list-item !important; /* Force display list-item */
-    padding-left: 0 !important; /* Ensure no extra padding on LI */
+    padding-left: 0.25em !important; /* Slight padding for bullet spacing */
 }
 
 /* Nested Lists */
@@ -92,6 +94,8 @@
     border-collapse: collapse;
     width: 100%;
     margin: 1em 0;
+    overflow-x: auto; /* Allow horizontal scroll for wide tables */
+    display: block; /* Make table responsive container */
 }
 
 .tinymce-content td, .tinymce-content th {
