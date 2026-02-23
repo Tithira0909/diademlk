@@ -20,6 +20,12 @@
     hyphens: none !important;
 }
 
+/* Paragraph spacing to match editor default */
+.tinymce-content p {
+    margin-bottom: 1em;
+    margin-top: 0;
+}
+
 /* Reset Lists from Tailwind Preflight */
 .tinymce-content ul {
     list-style-type: disc !important;
@@ -38,9 +44,15 @@
 }
 
 .tinymce-content li {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.1em; /* Tighten list spacing to match Word/Editor */
     display: list-item !important; /* Force display list-item */
     padding-left: 0.25em !important; /* Slight padding for bullet spacing */
+}
+
+/* Remove margins from paragraphs inside list items to prevent double spacing */
+.tinymce-content li p {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 /* Nested Lists */
