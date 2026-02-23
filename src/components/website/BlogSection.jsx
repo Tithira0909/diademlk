@@ -46,7 +46,7 @@ const BlogCard = ({ post, isDark }) => (
             </h3>
 
             <div
-                className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
+                className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt, { ADD_ATTR: ['style', 'class'] }) }}
             />
 

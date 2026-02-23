@@ -102,3 +102,42 @@
     border: 1px solid #ddd;
     padding: 8px;
 }
+
+/* Blog Excerpt / Card Content Styles */
+.excerpt-content {
+    /* Ensure content stays within the card */
+    overflow: hidden;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.excerpt-content p {
+    margin-bottom: 0.5em; /* Reduce paragraph gap from browser default (1em) */
+    margin-top: 0;
+    line-height: inherit; /* Use card's line-height */
+}
+
+/* Ensure lists have bullets but are compact */
+.excerpt-content ul {
+    list-style-type: disc;
+    padding-left: 1.25em; /* Indent */
+    margin: 0.25em 0;
+}
+
+.excerpt-content ol {
+    list-style-type: decimal;
+    padding-left: 1.25em; /* Indent */
+    margin: 0.25em 0;
+}
+
+.excerpt-content li {
+    margin-bottom: 0.1em; /* Tight list items */
+    padding-left: 0;
+}
+
+/* Squash huge headings in excerpts */
+.excerpt-content h1, .excerpt-content h2, .excerpt-content h3, .excerpt-content h4 {
+    font-size: 1em; /* Force headings to match body text size */
+    font-weight: bold;
+    margin: 0.25em 0;
+}
