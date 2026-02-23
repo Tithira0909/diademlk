@@ -11,6 +11,7 @@ import BannerManager from './components/admin/BannerManager';
 import BlogManager from './components/admin/BlogManager';
 import InquiryManager from './components/admin/InquiryManager';
 import UserManagement from './components/admin/UserManagement';
+import Settings from './components/admin/Settings';
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
              <Route path="blogs" element={<BlogManager />} />
              <Route path="inquiries" element={<InquiryManager />} />
              <Route path="users" element={<UserManagement />} />
+             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </Router>

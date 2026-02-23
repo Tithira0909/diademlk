@@ -21,6 +21,7 @@ const AdminLayout = () => {
     { icon: FileText, label: 'Blogs & Articles', path: '/admin/blogs' },
     { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries' },
     { icon: Users, label: 'User Management', path: '/admin/users' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
   useEffect(() => {

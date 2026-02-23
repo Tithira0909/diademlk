@@ -26,7 +26,30 @@ const SECRET_KEY = process.env.SECRET_KEY || 'secret';
 
 // Check Database Connection on Startup
 db.query('SELECT 1')
-  .then(() => console.log('✅ Database connected successfully.'))
+  .then(async () => {
+    console.log('✅ Database connected successfully.');
+    // Initialize Settings Table
+    try {
+      await db.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                id INT PRIMARY KEY DEFAULT 1,
+                facebook_url VARCHAR(255),
+                instagram_url VARCHAR(255),
+                linkedin_url VARCHAR(255),
+                tiktok_url VARCHAR(255),
+                youtube_url VARCHAR(255),
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+          `);
+      await db.query(`
+            INSERT IGNORE INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url)
+            VALUES (1, '', '', '', '', '')
+          `);
+      console.log('✅ Settings table verified.');
+    } catch (err) {
+      console.error('❌ Settings table init failed:', err.message);
+    }
+  })
   .catch(err => {
     console.error('❌ Database Connection Failed:', err.message);
     console.error('Hint: Run "npm run setup" to create the database, or check your .env credentials.');
@@ -274,6 +297,29 @@ app.post('/api/views/increment', async (req, res) => {
          } catch(e) {
              res.status(500).json({ message: e.message });
          }
+    }
+});
+
+// --- Settings ---
+app.get('/api/settings', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM settings WHERE id = 1');
+        res.json(rows[0] || {});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.put('/api/settings', authenticateToken, async (req, res) => {
+    const { facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url } = req.body;
+    try {
+        await db.query(
+            'UPDATE settings SET facebook_url = ?, instagram_url = ?, linkedin_url = ?, tiktok_url = ?, youtube_url = ? WHERE id = 1',
+            [facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url]
+        );
+        res.json({ message: 'Settings updated' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

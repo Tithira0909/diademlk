@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { ArrowLeft, Download, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, FileText, AlertCircle, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
 import DOMPurify from 'dompurify';
 
 const ArticleViewer = () => {
   const { id } = useParams();
-  const { articles } = useData();
+  const { articles, settings } = useData();
   const [article, setArticle] = useState(null);
   const [activeTab, setActiveTab] = useState('blogs'); // For Navbar highlighting
   const [isDark, setIsDark] = useState(false); // Can be connected to context later or kept local
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   useEffect(() => {
     // ID comes as string from router, but usually stored as number in data
@@ -38,9 +42,38 @@ const ArticleViewer = () => {
                 <span>{article.date}</span>
             </div>
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4 mb-6">
+                {settings?.facebook_url && (
+                    <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:scale-110 transition-transform">
+                        <Facebook size={24} />
+                    </a>
+                )}
+                {settings?.instagram_url && (
+                    <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:scale-110 transition-transform">
+                        <Instagram size={24} />
+                    </a>
+                )}
+                {settings?.linkedin_url && (
+                    <a href={settings.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:scale-110 transition-transform">
+                        <Linkedin size={24} />
+                    </a>
+                )}
+                {settings?.tiktok_url && (
+                    <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer" className={`hover:scale-110 transition-transform ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Video size={24} />
+                    </a>
+                )}
+                {settings?.youtube_url && (
+                    <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:scale-110 transition-transform">
+                        <Youtube size={24} />
+                    </a>
+                )}
+            </div>
+
             <div
-                className={`tinymce-content text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
-                style={{ wordBreak: 'normal', hyphens: 'manual' }}
+                className={`tinymce-content text-xl leading-relaxed [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt, { ADD_ATTR: ['style', 'class', 'target'] }) }}
             />
         </div>
@@ -81,7 +114,7 @@ const ArticleViewer = () => {
             <div className={`tinymce-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
                  <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
                  <div
-                    className="break-words [&>*]:max-w-full"
+                    className="[&>*]:max-w-full"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content, { ADD_ATTR: ['style', 'class', 'target'] }) }}
                  />
             </div>

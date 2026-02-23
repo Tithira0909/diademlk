@@ -57,25 +57,28 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
         value={value}
         onEditorChange={(newValue) => onChange(newValue)}
         init={{
-          height: 500,
-          menubar: false,
+          height: 600,
+          menubar: true,
           plugins: [
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
+            'directionality'
           ],
-          toolbar: 'undo redo | blocks | ' +
-            'bold italic forecolor | alignleft aligncenter ' +
+          toolbar: 'undo redo | blocks fontfamily fontsize | ' +
+            'bold italic underline strikethrough | alignleft aligncenter ' +
             'alignright alignjustify | bullist numlist outdent indent | ' +
-            'removeformat | image | help',
+            'lineheight | forecolor backcolor | removeformat | image media link table | code fullscreen preview',
+          font_family_formats: 'Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Lato=lato, sans-serif; Montserrat=montserrat, sans-serif; Roboto=roboto, sans-serif; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats',
           content_style: `
-            body { font-family:Helvetica,Arial,sans-serif; font-size:14px; }
+            @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap');
+            body { font-family:Helvetica,Arial,sans-serif; font-size:16px; line-height: 1.6; color: #333; }
             ul { list-style-type: disc; list-style-position: outside; padding-left: 2.5em; margin: 1em 0; }
             ol { list-style-type: decimal; list-style-position: outside; padding-left: 2.5em; margin: 1em 0; }
             li { margin-bottom: 0.5em; padding-left: 0; }
             ul ul { list-style-type: circle; }
             ul ul ul { list-style-type: square; }
-            p { margin-bottom: 1em; }
+            p { margin-bottom: 1em; white-space: pre-wrap; }
             h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: bold; line-height: 1.2; }
             h1 { font-size: 2em; }
             h2 { font-size: 1.5em; }
@@ -87,7 +90,10 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
             td, th { border: 1px solid #ddd; padding: 8px; }
           `,
           images_upload_handler: handleImageUpload,
-          placeholder: placeholder
+          placeholder: placeholder,
+          paste_data_images: true,
+          browser_spellcheck: true,
+          contextmenu: false
         }}
       />
     </div>

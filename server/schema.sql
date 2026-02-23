@@ -54,6 +54,17 @@ CREATE TABLE IF NOT EXISTS site_stats (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Settings Table (Social Links & Config)
+CREATE TABLE IF NOT EXISTS settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    facebook_url VARCHAR(255),
+    instagram_url VARCHAR(255),
+    linkedin_url VARCHAR(255),
+    tiktok_url VARCHAR(255),
+    youtube_url VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Seed Data (Password is 'password')
 INSERT INTO users (username, password, role) VALUES
 ('admin', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin'),
@@ -74,3 +85,5 @@ INSERT INTO articles (title, category, excerpt, content, image, readTime, author
 ON DUPLICATE KEY UPDATE id=id;
 
 INSERT IGNORE INTO site_stats (id, views) VALUES (1, 0);
+
+INSERT IGNORE INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url) VALUES (1, '', '', '', '', '');

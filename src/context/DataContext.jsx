@@ -11,6 +11,7 @@ export const DataProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [banners, setBanners] = useState([]);
   const [siteViews, setSiteViews] = useState(0);
+  const [settings, setSettings] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +45,9 @@ export const DataProvider = ({ children }) => {
 
             const bannersRes = await fetch(`${API_URL}/banners`);
             if (bannersRes.ok) setBanners(await bannersRes.json());
+
+            const settingsRes = await fetch(`${API_URL}/settings`);
+            if (settingsRes.ok) setSettings(await settingsRes.json());
 
             const viewsRes = await fetch(`${API_URL}/views`);
             if (viewsRes.ok) {
@@ -211,6 +215,25 @@ export const DataProvider = ({ children }) => {
       }
   };
 
+  // Settings
+  const updateSettings = async (newSettings) => {
+      try {
+          const res = await fetch(`${API_URL}/settings`, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify(newSettings)
+          });
+          if (res.ok) {
+              setSettings(newSettings);
+              return true;
+          }
+          return false;
+      } catch (error) {
+          console.error("Error updating settings:", error);
+          return false;
+      }
+  };
+
   // File Upload Helper
   const uploadFile = async (file) => {
       const formData = new FormData();
@@ -271,6 +294,7 @@ export const DataProvider = ({ children }) => {
       users,
       banners,
       siteViews,
+      settings,
       currentUser,
       loading,
       addArticle,
@@ -281,6 +305,7 @@ export const DataProvider = ({ children }) => {
       deleteUser,
       addBanner,
       deleteBanner,
+      updateSettings,
       uploadFile,
       incrementViews,
       login,
