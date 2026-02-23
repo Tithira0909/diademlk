@@ -94,8 +94,18 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
           paste_data_images: true,
           browser_spellcheck: true,
           contextmenu: false,
-          paste_as_text: false, // Allow rich content paste from Word
-          smart_paste: true // Enhanced pasting
+          // Enhanced Word Paste Configuration
+          paste_as_text: false,
+          smart_paste: true,
+          paste_merge_formats: true,
+          paste_data_images: true,
+          paste_webkit_styles: "color font-size font-family font-weight font-style text-decoration text-align margin padding border background-color",
+          paste_retain_style_properties: "all",
+          paste_word_valid_elements: "b,strong,i,em,h1,h2,h3,h4,h5,h6,p,span,div,ul,ol,li,table,tr,td,th,thead,tbody,img,a,br,blockquote",
+          // Ensure we don't strip essential styles
+          valid_styles: {
+            '*': 'color,font-size,font-family,background-color,text-align,margin,padding,border,list-style-type,float,width,height'
+          }
         }}
       />
     </div>
