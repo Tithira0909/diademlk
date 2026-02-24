@@ -28,23 +28,28 @@ const SECRET_KEY = process.env.SECRET_KEY || 'secret';
 db.query('SELECT 1')
   .then(async () => {
     console.log('✅ Database connected successfully.');
-    // Initialize Settings Table
+    // Initialize Settings Table (SQLite compatible)
     try {
       await db.query(`
             CREATE TABLE IF NOT EXISTS settings (
-                id INT PRIMARY KEY DEFAULT 1,
-                facebook_url VARCHAR(255),
-                instagram_url VARCHAR(255),
-                linkedin_url VARCHAR(255),
-                tiktok_url VARCHAR(255),
-                youtube_url VARCHAR(255),
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                facebook_url TEXT,
+                instagram_url TEXT,
+                linkedin_url TEXT,
+                tiktok_url TEXT,
+                youtube_url TEXT,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
           `);
-      await db.query(`
-            INSERT IGNORE INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url)
+      // Initial insert
+      try {
+          await db.query(`
+            INSERT INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url)
             VALUES (1, '', '', '', '', '')
           `);
+      } catch (e) {
+          // Ignore unique constraint error if row exists
+      }
       console.log('✅ Settings table verified.');
     } catch (err) {
       console.error('❌ Settings table init failed:', err.message);
@@ -52,7 +57,6 @@ db.query('SELECT 1')
   })
   .catch(err => {
     console.error('❌ Database Connection Failed:', err.message);
-    console.error('Hint: Run "npm run setup" to create the database, or check your .env credentials.');
   });
 
 app.use(cors());
@@ -129,6 +133,8 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/articles', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM articles ORDER BY id DESC');
+    // SQLite stores boolean as 0/1, ensure types match frontend expectations if needed
+    // JSON content is stored as string, frontend parses it.
     res.json(rows);
   } catch (error) {
     console.error("Fetch Articles Error:", error);
@@ -137,7 +143,6 @@ app.get('/api/articles', async (req, res) => {
 });
 
 app.post('/api/articles', authenticateToken, async (req, res) => {
-  // Updated to match BlockNote & Frontend structure
   const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
   try {
@@ -153,7 +158,6 @@ app.post('/api/articles', authenticateToken, async (req, res) => {
 });
 
 app.put('/api/articles/:id', authenticateToken, async (req, res) => {
-  // Updated to match BlockNote & Frontend structure
   const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
   try {
@@ -236,7 +240,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
 // --- Banners ---
 app.get('/api/banners', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM banners WHERE active = TRUE ORDER BY list_order ASC');
+        const [rows] = await db.query('SELECT * FROM banners WHERE active = 1 ORDER BY list_order ASC');
         res.json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -282,7 +286,7 @@ app.post('/api/views/increment', async (req, res) => {
     } catch (error) {
          // Fail silently or create row if missing
          try {
-             await db.query('INSERT INTO site_stats (id, views) VALUES (1, 1) ON DUPLICATE KEY UPDATE views = views + 1');
+             await db.query('INSERT INTO site_stats (id, views) VALUES (1, 1)');
              res.json({ message: 'View counted' });
          } catch(e) {
              res.status(500).json({ message: e.message });

@@ -24,8 +24,13 @@ const BlogManager = () => {
   const editor = useCreateBlockNote({
     initialContent: initialContent ? JSON.parse(initialContent) : undefined,
     uploadFile: async (file) => {
-       const result = await uploadFile(file);
-       return result.url; // Assuming uploadFile returns { url: ... }
+       try {
+           const result = await uploadFile(file);
+           return result.url;
+       } catch(e) {
+           console.error("Image upload failed", e);
+           return "https://via.placeholder.com/150"; // Fallback
+       }
     }
   });
 
@@ -33,14 +38,16 @@ const BlogManager = () => {
   useEffect(() => {
     if (initialContent && editor) {
         async function loadContent() {
-             const blocks = await editor.tryParseMarkdownToBlocks(initialContent); // Fallback if not JSON
-             // But we are storing JSON, so let's try to replace blocks
-             const jsonContent = JSON.parse(initialContent);
-             editor.replaceBlocks(editor.document, jsonContent);
+             try {
+                 const jsonContent = JSON.parse(initialContent);
+                 // Clear existing blocks first to avoid duplication or conflicts
+                 editor.removeBlocks(editor.document);
+                 editor.replaceBlocks(editor.document, jsonContent);
+             } catch(e) {
+                 console.error("Failed to parse/load article content", e);
+             }
         }
-        // If it's a new editor instance, it might have loaded initialContent from config.
-        // But if we switch articles, we need to manually reset content.
-        // For simplicity in this React component, we might need to recreate the editor or replace blocks.
+        loadContent();
     }
   }, [initialContent, editor]);
 
@@ -69,18 +76,8 @@ const BlogManager = () => {
     setSlug(article.slug);
     setCategory(article.category);
     setExcerpt(article.excerpt);
-    setCoverImagePreview(article.cover_image); // Note: DB field is likely snake_case or we map it
-    // Handle content loading
-    if(article.content) {
-        try {
-            const parsed = JSON.parse(article.content);
-            if(editor) editor.replaceBlocks(editor.document, parsed);
-        } catch(e) {
-            console.error("Failed to parse article content", e);
-        }
-    } else {
-        if(editor) editor.removeBlocks(editor.document);
-    }
+    setCoverImagePreview(article.cover_image);
+    setInitialContent(article.content); // This triggers the useEffect
   };
 
   // Helper: Handle Form Submission
@@ -88,13 +85,19 @@ const BlogManager = () => {
     e.preventDefault();
 
     // Get content from BlockNote
+    // Use editor.document directly, which returns the array of blocks
     const content = JSON.stringify(editor.document);
 
     // Upload Cover Image if changed
     let coverImageUrl = coverImagePreview;
     if (coverImage) {
-        const uploadRes = await uploadFile(coverImage);
-        coverImageUrl = uploadRes.url;
+        try {
+            const uploadRes = await uploadFile(coverImage);
+            coverImageUrl = uploadRes.url;
+        } catch (e) {
+             console.error("Cover image upload failed", e);
+             alert("Cover image upload failed. Saving without new image.");
+        }
     }
 
     const articleData = {
