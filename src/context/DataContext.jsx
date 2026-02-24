@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { strapiService } from '../services/strapiService';
+import { sanityService } from '../services/sanityService';
 
 const DataContext = createContext();
 
@@ -31,12 +31,12 @@ export const DataProvider = ({ children }) => {
         try {
             if (loading) setLoading(true);
 
-            // Fetch Articles from Strapi
+            // Fetch Articles from Sanity
             try {
-                const strapiPosts = await strapiService.getArticles();
-                setArticles(strapiPosts); // These are { id, attributes: {} }
+                const sanityPosts = await sanityService.getPosts();
+                setArticles(sanityPosts);
             } catch (err) {
-                console.error("Strapi Fetch Failed:", err);
+                console.error("Sanity Fetch Failed:", err);
             }
 
             // Fetch other data from local backend

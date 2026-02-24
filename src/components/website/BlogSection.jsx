@@ -2,17 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import DOMPurify from 'dompurify';
-import { strapiService } from '../../services/strapiService';
+import { urlFor } from '../../services/sanityService';
 
 const BlogCard = ({ post, isDark }) => {
-    const { title, excerpt, slug, publishedAt, cover, category, readingTime } = post.attributes;
-    const coverUrl = cover?.data?.attributes?.url ? strapiService.getMediaUrl(cover.data.attributes.url) : null;
-    const categoryName = category?.data?.attributes?.name || 'Insight';
+    // Sanity Post fields: title, slug, publishedAt, mainImage, excerpt, categories
+    const { title, slug, publishedAt, mainImage, excerpt, categories } = post;
+    const coverUrl = mainImage ? urlFor(mainImage).width(600).height(400).url() : null;
+    const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
 
     return (
     <Link
-        to={`/article/${slug}`}
+        to={`/article/${slug.current}`}
         className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
     >
         {/* Image Container */}
@@ -39,22 +39,17 @@ const BlogCard = ({ post, isDark }) => {
                     <Calendar size={12} />
                     <span>{new Date(publishedAt).toLocaleDateString()}</span>
                 </div>
-                {readingTime && (
-                    <div className="flex items-center gap-1">
-                        <Clock size={12} />
-                        <span>{readingTime} min read</span>
-                    </div>
-                )}
+                {/* Reading time isn't standard in Sanity but can be computed. Omitted for now. */}
             </div>
 
             <h3 className={`font-artistic text-xl font-bold mb-3 line-clamp-2 leading-tight group-hover:text-green-500 transition-colors ${isDark ? 'text-white' : 'text-zinc-900'}`}>
                 {title}
             </h3>
 
-            <div
-                className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(excerpt, { ADD_ATTR: ['style', 'class'] }) }}
-            />
+            {/* Excerpt is usually plain text in Sanity schema unless defined otherwise */}
+            <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
+                {excerpt}
+            </p>
 
             <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
                 Read Article <ArrowRight size={14} />
@@ -94,7 +89,7 @@ const BlogSection = ({ isDark }) => {
                     {displayedArticles.length > 0 ? (
                         displayedArticles.map(post => (
                             <BlogCard
-                                key={post.id}
+                                key={post._id}
                                 post={post}
                                 isDark={isDark}
                             />

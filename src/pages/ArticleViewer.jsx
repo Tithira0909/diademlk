@@ -4,11 +4,11 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import DOMPurify from 'dompurify';
-import { strapiService } from '../services/strapiService';
+import { sanityService, urlFor } from '../services/sanityService';
+import RichText from '../components/common/RichText';
 
 const ArticleViewer = () => {
-  const { id } = useParams(); // 'id' will now be the SLUG
+  const { id } = useParams(); // 'id' will now be the SLUG (slug.current)
   const { settings } = useData();
   const [article, setArticle] = useState(null);
   const [activeTab, setActiveTab] = useState('blogs');
@@ -23,7 +23,7 @@ const ArticleViewer = () => {
     const fetchArticle = async () => {
         try {
             setLoading(true);
-            const data = await strapiService.getArticleBySlug(id);
+            const data = await sanityService.getPostBySlug(id);
             setArticle(data);
         } catch (error) {
             console.error("Failed to fetch article:", error);
@@ -37,9 +37,9 @@ const ArticleViewer = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
-  const { title, excerpt, content, publishedAt, cover, category } = article.attributes;
-  const coverUrl = cover?.data?.attributes?.url ? strapiService.getMediaUrl(cover.data.attributes.url) : null;
-  const categoryName = category?.data?.attributes?.name || 'Insight';
+  const { title, publishedAt, mainImage, body, categories } = article;
+  const coverUrl = mainImage ? urlFor(mainImage).width(1200).height(600).url() : null;
+  const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
@@ -87,26 +87,16 @@ const ArticleViewer = () => {
                     </a>
                 )}
             </div>
-
-            {/* Excerpt if exists */}
-            {excerpt && (
-                <div className={`text-lg md:text-xl font-medium mb-8 leading-relaxed italic ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {excerpt}
-                </div>
-            )}
         </div>
 
         {/* Content */}
-        <div className={`strapi-content ck-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+        <div className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
              {coverUrl && (
-                 <img src={coverUrl} alt={title} className="w-full h-96 object-cover rounded-xl mb-8" />
+                 <img src={coverUrl} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
              )}
 
-             {/* CKEditor HTML Content */}
-             <div
-                className="[&>*]:max-w-full"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content, { ADD_ATTR: ['style', 'class', 'target', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'] }) }}
-             />
+             {/* Portable Text Content */}
+             <RichText content={body} />
         </div>
       </div>
 

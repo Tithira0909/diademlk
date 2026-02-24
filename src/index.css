@@ -7,23 +7,24 @@
     hyphens: none !important;
 }
 
-/* CKEditor Content Viewer - Mirrors standard HTML output */
-.strapi-content {
+/* Portable Text Content (Sanity) */
+.portable-content {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: 1.6;
     color: inherit;
     word-break: normal;
     overflow-wrap: break-word;
+    /* This is critical for spacing */
     white-space: normal;
 }
 
 /* Typography */
-.strapi-content p {
+.portable-content p {
     margin-bottom: 1.5em;
     font-size: 1.125rem;
 }
 
-.strapi-content h1, .strapi-content h2, .strapi-content h3, .strapi-content h4, .strapi-content h5, .strapi-content h6 {
+.portable-content h1, .portable-content h2, .portable-content h3, .portable-content h4, .portable-content h5, .portable-content h6 {
     margin-top: 2em;
     margin-bottom: 0.5em;
     font-weight: 700;
@@ -31,22 +32,23 @@
     color: inherit;
 }
 
-.strapi-content h1 { font-size: 2.5em; }
-.strapi-content h2 { font-size: 2em; }
-.strapi-content h3 { font-size: 1.5em; }
-.strapi-content h4 { font-size: 1.25em; }
+.portable-content h1 { font-size: 2.5em; }
+.portable-content h2 { font-size: 2em; }
+.portable-content h3 { font-size: 1.5em; }
+.portable-content h4 { font-size: 1.25em; }
 
-.strapi-content a {
+.portable-content a {
     color: #4f46e5; /* Indigo-600 */
     text-decoration: underline;
     transition: color 0.2s;
 }
 
-.strapi-content a:hover {
+.portable-content a:hover {
     color: #4338ca; /* Indigo-700 */
 }
 
-.strapi-content blockquote {
+/* Blockquotes */
+.portable-content blockquote {
     border-left: 4px solid #e5e7eb;
     margin: 1.5em 0;
     padding-left: 1.5em;
@@ -57,68 +59,50 @@
     border-radius: 0 0.5rem 0.5rem 0;
 }
 
-/* Lists - CKEditor style */
-.strapi-content ul {
+/* Lists - Standard UL/OL */
+.portable-content ul {
     list-style-type: disc;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.strapi-content ol {
+.portable-content ol {
     list-style-type: decimal;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.strapi-content li {
+.portable-content li {
     margin-bottom: 0.5em;
     padding-left: 0.5em;
 }
 
 /* Nested Lists */
-.strapi-content ul ul, .strapi-content ol ul {
+.portable-content ul ul, .portable-content ol ul {
     list-style-type: circle;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
-.strapi-content ul ul ul {
+.portable-content ul ul ul {
     list-style-type: square;
 }
 
-/* Images and Media */
-.strapi-content figure {
+/* Images and Figures */
+.portable-content figure {
     margin: 2em 0;
-    display: table; /* Helps with caption alignment if needed */
+    display: table;
     max-width: 100%;
 }
 
-.strapi-content img {
+.portable-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
     display: block;
 }
 
-/* Image alignment classes often used by CKEditor */
-.image-style-side {
-    float: right;
-    margin-left: 1.5em;
-    max-width: 50%;
-}
-
-.image-style-align-left {
-    float: left;
-    margin-right: 1.5em;
-    max-width: 50%;
-}
-
-.image-style-align-center {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.strapi-content figcaption {
+.portable-content figcaption {
     text-align: center;
     font-size: 0.875rem;
     color: #6b7280;
@@ -131,7 +115,7 @@
 }
 
 /* Tables */
-.strapi-content table {
+.portable-content table {
     border-collapse: collapse;
     width: 100%;
     margin: 1.5em 0;
@@ -139,25 +123,19 @@
     display: block;
 }
 
-.strapi-content th, .strapi-content td {
+.portable-content th, .portable-content td {
     border: 1px solid #e5e7eb;
     padding: 0.75em;
     text-align: left;
 }
 
-.strapi-content th {
+.portable-content th {
     background-color: #f9fafb;
     font-weight: 600;
 }
 
-/* HR */
-.strapi-content hr {
-    margin: 3em 0;
-    border-top: 1px solid #e5e7eb;
-}
-
 /* Code Blocks */
-.strapi-content pre {
+.portable-content pre {
     background: #1f2937;
     color: #e5e7eb;
     padding: 1em;
@@ -166,7 +144,7 @@
     margin: 1.5em 0;
 }
 
-.strapi-content code {
+.portable-content code {
     background: #f3f4f6;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
@@ -174,7 +152,7 @@
     font-family: monospace;
 }
 
-.strapi-content pre code {
+.portable-content pre code {
     background: transparent;
     padding: 0;
     color: inherit;
@@ -182,40 +160,40 @@
 
 
 /* Dark Mode Overrides */
-.bg-black .strapi-content {
+.bg-black .portable-content {
     color: #d1d5db;
 }
 
-.bg-black .strapi-content a {
-    color: #818cf8; /* Indigo-400 */
+.bg-black .portable-content a {
+    color: #818cf8;
 }
 
-.bg-black .strapi-content a:hover {
-    color: #a5b4fc; /* Indigo-300 */
+.bg-black .portable-content a:hover {
+    color: #a5b4fc;
 }
 
-.bg-black .strapi-content blockquote {
+.bg-black .portable-content blockquote {
     border-left-color: #374151;
     color: #9ca3af;
     background: #18181b;
 }
 
-.bg-black .strapi-content figcaption {
+.bg-black .portable-content figcaption {
     background: #27272a;
     color: #a1a1aa;
 }
 
-.bg-black .strapi-content th {
+.bg-black .portable-content th {
     background-color: #1f2937;
     border-color: #374151;
     color: #e5e7eb;
 }
 
-.bg-black .strapi-content td {
+.bg-black .portable-content td {
     border-color: #374151;
 }
 
-.bg-black .strapi-content code {
+.bg-black .portable-content code {
     background: #27272a;
     color: #e4e4e7;
 }
