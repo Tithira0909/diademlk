@@ -15,5 +15,19 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'blocknote-vendor': ['@blocknote/core', '@blocknote/react', '@blocknote/mantine'],
+          'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
+          'recharts-vendor': ['recharts'],
+          'three-vendor': ['three']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000 // Raise limit slightly as some vendor chunks might still be large but separate
   }
 })

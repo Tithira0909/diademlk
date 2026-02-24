@@ -1,39 +1,51 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DataProvider } from './context/DataContext';
 
+// Eager Loading for critical paths (Home, Login)
 import WebsiteLayout from './components/website/WebsiteLayout';
-import ArticleViewer from './pages/ArticleViewer';
 import AdminLogin from './pages/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
-import DashboardOverview from './components/admin/DashboardOverview';
-import BannerManager from './components/admin/BannerManager';
-import BlogManager from './components/admin/BlogManager';
-import InquiryManager from './components/admin/InquiryManager';
-import UserManagement from './components/admin/UserManagement';
-import Settings from './components/admin/Settings';
+
+// Lazy Loading for heavy components
+const ArticleViewer = lazy(() => import('./pages/ArticleViewer'));
+const DashboardOverview = lazy(() => import('./components/admin/DashboardOverview'));
+const BannerManager = lazy(() => import('./components/admin/BannerManager'));
+const BlogManager = lazy(() => import('./components/admin/BlogManager')); // Heavy (BlockNote)
+const InquiryManager = lazy(() => import('./components/admin/InquiryManager'));
+const UserManagement = lazy(() => import('./components/admin/UserManagement'));
+const Settings = lazy(() => import('./components/admin/Settings'));
+
+// Loading Fallback
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 const App = () => {
   return (
     <DataProvider>
       <Router>
-        <Routes>
-          {/* Public Website Routes */}
-          <Route path="/" element={<WebsiteLayout />} />
-          <Route path="/article/:id" element={<ArticleViewer />} />
-          <Route path="/login" element={<AdminLogin />} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public Website Routes */}
+            <Route path="/" element={<WebsiteLayout />} />
+            <Route path="/article/:id" element={<ArticleViewer />} />
+            <Route path="/login" element={<AdminLogin />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-             <Route index element={<Navigate to="dashboard" replace />} />
-             <Route path="dashboard" element={<DashboardOverview />} />
-             <Route path="banners" element={<BannerManager />} />
-             <Route path="blogs" element={<BlogManager />} />
-             <Route path="inquiries" element={<InquiryManager />} />
-             <Route path="users" element={<UserManagement />} />
-             <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+               <Route index element={<Navigate to="dashboard" replace />} />
+               <Route path="dashboard" element={<DashboardOverview />} />
+               <Route path="banners" element={<BannerManager />} />
+               <Route path="blogs" element={<BlogManager />} />
+               <Route path="inquiries" element={<InquiryManager />} />
+               <Route path="users" element={<UserManagement />} />
+               <Route path="settings" element={<Settings />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </Router>
     </DataProvider>
   );
