@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ghostService } from '../services/ghostService';
+import { strapiService } from '../services/strapiService';
 
 const DataContext = createContext();
 
@@ -23,24 +23,20 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('diadem_currentUser'));
     if (storedUser) setCurrentUser(storedUser);
-    // Don't set loading false here, wait for initial fetch
   }, []);
 
   // Fetch Initial Data (Public + Protected if logged in)
   useEffect(() => {
     const fetchData = async () => {
         try {
-            // Only set loading if we are doing a hard refresh or initial fetch
-            // We don't want to flicker loading on every render
             if (loading) setLoading(true);
 
-            // Fetch Articles from Ghost
+            // Fetch Articles from Strapi
             try {
-                const ghostPosts = await ghostService.browsePosts();
-                setArticles(ghostPosts);
+                const strapiPosts = await strapiService.getArticles();
+                setArticles(strapiPosts); // These are { id, attributes: {} }
             } catch (err) {
-                console.error("Ghost Fetch Failed:", err);
-                // Fallback to empty or local if needed, but for now just log
+                console.error("Strapi Fetch Failed:", err);
             }
 
             // Fetch other data from local backend
@@ -57,9 +53,7 @@ export const DataProvider = ({ children }) => {
             }
 
             // Protected Data
-            const token = currentUser?.token; // Use current user from state or closure? Better check state or localstorage again if needed, but dependency array handles it.
-            // Actually, currentUser is in dependency, so this runs on mount (null) and on login (user object)
-
+            const token = currentUser?.token;
             if (token) {
                  const headers = { 'Authorization': `Bearer ${token}` };
                  const inquiriesRes = await fetch(`${API_URL}/inquiries`, { headers });
@@ -77,7 +71,7 @@ export const DataProvider = ({ children }) => {
     };
 
     fetchData();
-  }, [currentUser]); // Re-fetch when user changes
+  }, [currentUser]);
 
   // --- ACTIONS ---
 
@@ -89,22 +83,16 @@ export const DataProvider = ({ children }) => {
       } : { 'Content-Type': 'application/json' };
   };
 
-  // Articles - Deprecated Local Actions (kept for safety or removed? User wants "Integrate Ghost")
-  // Since we are using Ghost, we can't "add" to it from here via Client API.
-  // We will remove the local add/update/delete article functions to avoid confusion.
-  // The Admin UI will link to Ghost Admin.
-
   // Inquiries
   const addInquiry = async (inquiry) => {
     try {
         const res = await fetch(`${API_URL}/inquiries`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Public endpoint
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inquiry)
         });
         if (res.ok) {
             const newInquiry = await res.json();
-            // Only update local state if we are admin/can see it, otherwise it's just sent
             if(currentUser) setInquiries(prev => [newInquiry, ...prev]);
         }
     } catch (error) {
@@ -192,7 +180,7 @@ export const DataProvider = ({ children }) => {
       }
   };
 
-  // File Upload Helper
+  // File Upload Helper (Local)
   const uploadFile = async (file) => {
       const formData = new FormData();
       formData.append('file', file);
@@ -227,7 +215,7 @@ export const DataProvider = ({ children }) => {
         });
 
         if (res.ok) {
-            const data = await res.json(); // { id, username, role, token }
+            const data = await res.json();
             setCurrentUser(data);
             localStorage.setItem('diadem_currentUser', JSON.stringify(data));
             return true;

@@ -1,20 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight, ChevronRight, FileText } from 'lucide-react';
+import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import DOMPurify from 'dompurify';
+import { strapiService } from '../../services/strapiService';
 
-const BlogCard = ({ post, isDark }) => (
+const BlogCard = ({ post, isDark }) => {
+    const { title, excerpt, slug, publishedAt, cover, category, readingTime } = post.attributes;
+    const coverUrl = cover?.data?.attributes?.url ? strapiService.getMediaUrl(cover.data.attributes.url) : null;
+    const categoryName = category?.data?.attributes?.name || 'Insight';
+
+    return (
     <Link
-        to={`/article/${post.slug}`}
+        to={`/article/${slug}`}
         className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
     >
         {/* Image Container */}
         <div className="h-48 overflow-hidden relative bg-gray-200">
-            {post.feature_image ? (
+            {coverUrl ? (
                 <img
-                    src={post.feature_image}
-                    alt={post.title}
+                    src={coverUrl}
+                    alt={title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
             ) : (
@@ -22,7 +28,7 @@ const BlogCard = ({ post, isDark }) => (
             )}
 
             <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
-                {post.primary_tag?.name || 'Insight'}
+                {categoryName}
             </div>
         </div>
 
@@ -31,24 +37,23 @@ const BlogCard = ({ post, isDark }) => (
             <div className={`flex items-center gap-4 text-xs mb-3 ${isDark ? 'text-gray-500' : 'text-zinc-500'}`}>
                 <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    {/* Ghost returns ISO date */}
-                    <span>{new Date(post.published_at).toLocaleDateString()}</span>
+                    <span>{new Date(publishedAt).toLocaleDateString()}</span>
                 </div>
-                {post.reading_time && (
+                {readingTime && (
                     <div className="flex items-center gap-1">
                         <Clock size={12} />
-                        <span>{post.reading_time} min read</span>
+                        <span>{readingTime} min read</span>
                     </div>
                 )}
             </div>
 
             <h3 className={`font-artistic text-xl font-bold mb-3 line-clamp-2 leading-tight group-hover:text-green-500 transition-colors ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-                {post.title}
+                {title}
             </h3>
 
             <div
                 className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt, { ADD_ATTR: ['style', 'class'] }) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(excerpt, { ADD_ATTR: ['style', 'class'] }) }}
             />
 
             <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
@@ -56,12 +61,13 @@ const BlogCard = ({ post, isDark }) => (
             </div>
         </div>
     </Link>
-);
+    );
+};
 
 const BlogSection = ({ isDark }) => {
     const { articles } = useData();
 
-    // Limit to latest 3-4 articles or show all? Let's show up to 6
+    // Limit to latest 6 articles
     const displayedArticles = articles ? articles.slice(0, 6) : [];
 
     return (

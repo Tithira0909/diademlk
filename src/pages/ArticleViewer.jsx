@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { ArrowLeft, Download, FileText, AlertCircle, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
+import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
 import DOMPurify from 'dompurify';
-import { ghostService } from '../services/ghostService';
+import { strapiService } from '../services/strapiService';
 
 const ArticleViewer = () => {
   const { id } = useParams(); // 'id' will now be the SLUG
@@ -23,7 +23,7 @@ const ArticleViewer = () => {
     const fetchArticle = async () => {
         try {
             setLoading(true);
-            const data = await ghostService.readPost(id); // id is the slug
+            const data = await strapiService.getArticleBySlug(id);
             setArticle(data);
         } catch (error) {
             console.error("Failed to fetch article:", error);
@@ -37,6 +37,10 @@ const ArticleViewer = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
+  const { title, excerpt, content, publishedAt, cover, category } = article.attributes;
+  const coverUrl = cover?.data?.attributes?.url ? strapiService.getMediaUrl(cover.data.attributes.url) : null;
+  const categoryName = category?.data?.attributes?.name || 'Insight';
+
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} isDark={isDark} toggleTheme={() => setIsDark(!isDark)} />
@@ -49,11 +53,11 @@ const ArticleViewer = () => {
         {/* Header */}
         <div className="mb-12">
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-blue-500 mb-4">
-                <span>{article.primary_tag?.name || 'Insight'}</span>
+                <span>{categoryName}</span>
                 <span>•</span>
-                <span>{new Date(article.published_at).toLocaleDateString()}</span>
+                <span>{new Date(publishedAt).toLocaleDateString()}</span>
             </div>
-            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
+            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{title}</h1>
 
             {/* Social Links */}
             <div className="flex items-center gap-4 mb-6">
@@ -85,23 +89,23 @@ const ArticleViewer = () => {
             </div>
 
             {/* Excerpt if exists */}
-            {article.excerpt && (
+            {excerpt && (
                 <div className={`text-lg md:text-xl font-medium mb-8 leading-relaxed italic ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {article.excerpt}
+                    {excerpt}
                 </div>
             )}
         </div>
 
         {/* Content */}
-        <div className={`ghost-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-             {article.feature_image && (
-                 <img src={article.feature_image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
+        <div className={`strapi-content ck-content ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+             {coverUrl && (
+                 <img src={coverUrl} alt={title} className="w-full h-96 object-cover rounded-xl mb-8" />
              )}
 
-             {/* Ghost HTML Content */}
+             {/* CKEditor HTML Content */}
              <div
                 className="[&>*]:max-w-full"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.html, { ADD_ATTR: ['style', 'class', 'target', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'] }) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content, { ADD_ATTR: ['style', 'class', 'target', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'] }) }}
              />
         </div>
       </div>

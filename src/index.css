@@ -7,24 +7,23 @@
     hyphens: none !important;
 }
 
-/* Ghost Content Viewer - Koenig Editor Styles */
-.ghost-content {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Clean, standard font */
+/* CKEditor Content Viewer - Mirrors standard HTML output */
+.strapi-content {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: 1.6;
     color: inherit;
     word-break: normal;
     overflow-wrap: break-word;
-    /* Preserve whitespace for code blocks but handle normal text naturally */
     white-space: normal;
 }
 
 /* Typography */
-.ghost-content p {
+.strapi-content p {
     margin-bottom: 1.5em;
-    font-size: 1.125rem; /* 18px for readability */
+    font-size: 1.125rem;
 }
 
-.ghost-content h1, .ghost-content h2, .ghost-content h3, .ghost-content h4, .ghost-content h5, .ghost-content h6 {
+.strapi-content h1, .strapi-content h2, .strapi-content h3, .strapi-content h4, .strapi-content h5, .strapi-content h6 {
     margin-top: 2em;
     margin-bottom: 0.5em;
     font-weight: 700;
@@ -32,193 +31,107 @@
     color: inherit;
 }
 
-.ghost-content h1 { font-size: 2.5em; }
-.ghost-content h2 { font-size: 2em; }
-.ghost-content h3 { font-size: 1.5em; }
-.ghost-content h4 { font-size: 1.25em; }
+.strapi-content h1 { font-size: 2.5em; }
+.strapi-content h2 { font-size: 2em; }
+.strapi-content h3 { font-size: 1.5em; }
+.strapi-content h4 { font-size: 1.25em; }
 
-.ghost-content a {
-    color: #3b82f6; /* Blue-500 */
+.strapi-content a {
+    color: #4f46e5; /* Indigo-600 */
     text-decoration: underline;
     transition: color 0.2s;
 }
 
-.ghost-content a:hover {
-    color: #2563eb; /* Blue-600 */
+.strapi-content a:hover {
+    color: #4338ca; /* Indigo-700 */
 }
 
-.ghost-content blockquote {
+.strapi-content blockquote {
     border-left: 4px solid #e5e7eb;
     margin: 1.5em 0;
     padding-left: 1.5em;
     font-style: italic;
     color: #6b7280;
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 0 0.5rem 0.5rem 0;
 }
 
-/* Lists - Critical for "MS Word" feel */
-.ghost-content ul {
+/* Lists - CKEditor style */
+.strapi-content ul {
     list-style-type: disc;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.ghost-content ol {
+.strapi-content ol {
     list-style-type: decimal;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.ghost-content li {
+.strapi-content li {
     margin-bottom: 0.5em;
     padding-left: 0.5em;
 }
 
 /* Nested Lists */
-.ghost-content ul ul, .ghost-content ol ul {
+.strapi-content ul ul, .strapi-content ol ul {
     list-style-type: circle;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
-.ghost-content ul ul ul {
+.strapi-content ul ul ul {
     list-style-type: square;
 }
 
-/* Ghost / Koenig Editor Specific Classes */
+/* Images and Media */
+.strapi-content figure {
+    margin: 2em 0;
+    display: table; /* Helps with caption alignment if needed */
+    max-width: 100%;
+}
 
-/* Images */
-.ghost-content img {
+.strapi-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
-    margin: 2em auto;
     display: block;
 }
 
-.kg-width-wide img {
-    max-width: 85vw; /* Break out of container slightly if needed */
+/* Image alignment classes often used by CKEditor */
+.image-style-side {
+    float: right;
+    margin-left: 1.5em;
+    max-width: 50%;
 }
 
-.kg-width-full img {
-    max-width: 100vw;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    border-radius: 0;
+.image-style-align-left {
+    float: left;
+    margin-right: 1.5em;
+    max-width: 50%;
 }
 
-/* Captions */
-.kg-image-card figcaption {
+.image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.strapi-content figcaption {
     text-align: center;
     font-size: 0.875rem;
     color: #6b7280;
     margin-top: 0.5em;
-}
-
-/* Galleries */
-.kg-gallery-container {
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;
-}
-.kg-gallery-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-.kg-gallery-image img {
-    display: block;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-}
-
-/* Embeds (YouTube, Twitter, etc.) */
-.kg-embed-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 2em 0;
-    width: 100%;
-}
-
-.kg-embed-card iframe {
-    max-width: 100%;
-}
-
-/* Bookmark Cards (Ghost Feature) */
-.kg-bookmark-card {
-    width: 100%;
-    background: #fff; /* Force white background for bookmark */
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    margin: 1.5em 0;
-}
-
-.kg-bookmark-container {
-    display: flex;
-    text-decoration: none !important;
-    color: #111 !important;
-    min-height: 148px;
-}
-
-.kg-bookmark-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    flex-grow: 1;
-}
-
-.kg-bookmark-title {
-    font-weight: 700;
-    font-size: 1.1rem;
-    line-height: 1.3em;
-}
-
-.kg-bookmark-description {
-    font-size: 0.9rem;
-    line-height: 1.5em;
-    color: #6b7280;
-    margin-top: 0.5em;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-}
-
-.kg-bookmark-metadata {
-    display: flex;
-    align-items: center;
-    font-size: 0.8rem;
-    color: #374151;
-    margin-top: 1em;
-}
-
-.kg-bookmark-icon {
-    width: 22px;
-    height: 22px;
-    margin-right: 8px;
-}
-
-.kg-bookmark-thumbnail {
-    position: relative;
-    min-width: 33%;
-    max-height: 100%;
-}
-
-.kg-bookmark-thumbnail img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0 0.5rem 0.5rem 0;
-    margin: 0; /* Override generic img margin */
+    background: #f3f4f6;
+    padding: 0.5em;
+    border-radius: 0.25rem;
+    display: table-caption;
+    caption-side: bottom;
 }
 
 /* Tables */
-.ghost-content table {
+.strapi-content table {
     border-collapse: collapse;
     width: 100%;
     margin: 1.5em 0;
@@ -226,25 +139,25 @@
     display: block;
 }
 
-.ghost-content th, .ghost-content td {
+.strapi-content th, .strapi-content td {
     border: 1px solid #e5e7eb;
     padding: 0.75em;
     text-align: left;
 }
 
-.ghost-content th {
+.strapi-content th {
     background-color: #f9fafb;
     font-weight: 600;
 }
 
 /* HR */
-.ghost-content hr {
+.strapi-content hr {
     margin: 3em 0;
     border-top: 1px solid #e5e7eb;
 }
 
 /* Code Blocks */
-.ghost-content pre {
+.strapi-content pre {
     background: #1f2937;
     color: #e5e7eb;
     padding: 1em;
@@ -253,7 +166,7 @@
     margin: 1.5em 0;
 }
 
-.ghost-content code {
+.strapi-content code {
     background: #f3f4f6;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
@@ -261,59 +174,53 @@
     font-family: monospace;
 }
 
-.ghost-content pre code {
+.strapi-content pre code {
     background: transparent;
     padding: 0;
     color: inherit;
 }
 
 
-/* Dark Mode Overrides for Content */
-.bg-black .ghost-content {
+/* Dark Mode Overrides */
+.bg-black .strapi-content {
     color: #d1d5db;
 }
 
-.bg-black .ghost-content a {
-    color: #60a5fa;
+.bg-black .strapi-content a {
+    color: #818cf8; /* Indigo-400 */
 }
 
-.bg-black .ghost-content a:hover {
-    color: #93c5fd;
+.bg-black .strapi-content a:hover {
+    color: #a5b4fc; /* Indigo-300 */
 }
 
-.bg-black .ghost-content blockquote {
+.bg-black .strapi-content blockquote {
     border-left-color: #374151;
     color: #9ca3af;
+    background: #18181b;
 }
 
-.bg-black .ghost-content th {
+.bg-black .strapi-content figcaption {
+    background: #27272a;
+    color: #a1a1aa;
+}
+
+.bg-black .strapi-content th {
     background-color: #1f2937;
     border-color: #374151;
     color: #e5e7eb;
 }
 
-.bg-black .ghost-content td {
+.bg-black .strapi-content td {
     border-color: #374151;
 }
 
-.bg-black .kg-bookmark-card {
-    background: #18181b; /* Zinc-900 */
-    border-color: #3f3f46;
+.bg-black .strapi-content code {
+    background: #27272a;
+    color: #e4e4e7;
 }
 
-.bg-black .kg-bookmark-container {
-    color: #e4e4e7 !important;
-}
-
-.bg-black .kg-bookmark-description {
-    color: #a1a1aa;
-}
-
-.bg-black .kg-bookmark-metadata {
-    color: #d4d4d8;
-}
-
-/* Excerpt Styles (kept from before, just cleaned up) */
+/* Excerpt Styles */
 .excerpt-content {
     overflow: hidden;
     word-break: normal;
