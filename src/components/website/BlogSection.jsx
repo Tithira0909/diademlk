@@ -4,54 +4,54 @@ import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
 const BlogCard = ({ post, isDark }) => {
-    // Contentful Fields: id, title, slug, publishedAt, excerpt, coverImage, categories
-    const { title, slug, publishedAt, excerpt, coverImage, categories } = post;
-    const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
+    // Ghost Fields: id, title, slug, published_at, excerpt, feature_image, tags
+    const { title, slug, published_at, excerpt, feature_image, tags } = post;
+    const categoryName = (tags && tags.length > 0) ? tags[0].name : 'Insight';
 
     return (
-    <Link
-        to={`/article/${slug}`}
-        className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
-    >
-        {/* Image Container */}
-        <div className="h-48 overflow-hidden relative bg-gray-200">
-            {coverImage ? (
-                <img
-                    src={coverImage}
-                    alt={title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">No Image</div>
-            )}
+        <Link
+            to={`/article/${slug}`}
+            className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
+        >
+            {/* Image Container */}
+            <div className="h-48 overflow-hidden relative bg-gray-200">
+                {feature_image ? (
+                    <img
+                        src={feature_image}
+                        alt={title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold">No Image</div>
+                )}
 
-            <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
-                {categoryName}
-            </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 flex flex-col flex-grow">
-            <div className={`flex items-center gap-4 text-xs mb-3 ${isDark ? 'text-gray-500' : 'text-zinc-500'}`}>
-                <div className="flex items-center gap-1">
-                    <Calendar size={12} />
-                    <span>{new Date(publishedAt).toLocaleDateString()}</span>
+                <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
+                    {categoryName}
                 </div>
             </div>
 
-            <h3 className={`font-artistic text-xl font-bold mb-3 line-clamp-2 leading-tight group-hover:text-green-500 transition-colors ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-                {title}
-            </h3>
+            {/* Content */}
+            <div className="p-6 flex flex-col flex-grow">
+                <div className={`flex items-center gap-4 text-xs mb-3 ${isDark ? 'text-gray-500' : 'text-zinc-500'}`}>
+                    <div className="flex items-center gap-1">
+                        <Calendar size={12} />
+                        <span>{new Date(published_at).toLocaleDateString()}</span>
+                    </div>
+                </div>
 
-            <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
-                {excerpt}
-            </p>
+                <h3 className={`font-artistic text-xl font-bold mb-3 line-clamp-2 leading-tight group-hover:text-green-500 transition-colors ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+                    {title}
+                </h3>
 
-            <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
-                Read Article <ArrowRight size={14} />
+                <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
+                    {excerpt}
+                </p>
+
+                <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest group-hover:gap-3 transition-all ${isDark ? 'text-white' : 'text-black'}`}>
+                    Read Article <ArrowRight size={14} />
+                </div>
             </div>
-        </div>
-    </Link>
+        </Link>
     );
 };
 

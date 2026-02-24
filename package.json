@@ -10,10 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@contentful/rich-text-react-renderer": "^16.1.6",
-    "@contentful/rich-text-types": "^17.2.5",
     "@tailwindcss/typography": "^0.5.19",
-    "contentful": "^11.10.4",
+    "@tryghost/content-api": "^1.12.3",
     "dompurify": "^3.3.1",
     "lucide-react": "^0.555.0",
     "react": "^19.2.0",

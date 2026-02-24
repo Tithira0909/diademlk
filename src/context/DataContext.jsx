@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { contentfulService } from '../services/contentfulService';
+import { ghostService } from '../services/ghostService';
 
 const DataContext = createContext();
 
@@ -31,9 +31,9 @@ export const DataProvider = ({ children }) => {
         try {
             if (loading) setLoading(true);
 
-            // Fetch Articles from Contentful
-            const contentfulPosts = await contentfulService.getPosts();
-            setArticles(contentfulPosts);
+            // Fetch Articles from Ghost
+            const ghostPosts = await ghostService.getPosts();
+            setArticles(ghostPosts);
 
             // Fetch other data from local backend
             const bannersRes = await fetch(`${API_URL}/banners`);

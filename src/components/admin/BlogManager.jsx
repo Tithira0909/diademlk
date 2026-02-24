@@ -4,47 +4,47 @@ import { ExternalLink, Eye, Calendar, Tag } from 'lucide-react';
 
 const BlogManager = () => {
   const { articles } = useData();
-  const contentfulUrl = 'https://app.contentful.com';
+  const ghostUrl = import.meta.env.VITE_GHOST_API_URL ? `${import.meta.env.VITE_GHOST_API_URL}/ghost` : 'https://ghost.org';
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <div>
             <h1 className="text-3xl font-bold text-gray-800 font-artistic">Blog & Article Management</h1>
-            <p className="text-gray-500 mt-2">Content is managed via Contentful (Web CMS). Changes made there will reflect here automatically.</p>
+            <p className="text-gray-500 mt-2">Content is managed via Ghost CMS. Changes made there will reflect here automatically.</p>
         </div>
         <a
-          href={contentfulUrl}
+          href={ghostUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
         >
-          <ExternalLink size={18} /> Open Contentful
+          <ExternalLink size={18} /> Open Ghost Admin
         </a>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h2 className="font-bold text-gray-700">Published Articles ({articles.length})</h2>
-            <div className="text-xs font-bold uppercase tracking-widest text-gray-400">Synced from Contentful</div>
+            <div className="text-xs font-bold uppercase tracking-widest text-gray-400">Synced from Ghost</div>
         </div>
 
         <div className="divide-y divide-gray-100">
             {articles.length === 0 ? (
                 <div className="p-12 text-center text-gray-400">
-                    <p>No articles found. Publish your first post in Contentful!</p>
+                    <p>No articles found. Publish your first post in Ghost!</p>
                 </div>
             ) : (
                 articles.map(article => {
-                    const { title, excerpt, slug, publishedAt, coverImage, categories } = article;
-                    const categoryName = (categories && categories.length > 0) ? categories[0] : 'Uncategorized';
+                    const { id, title, excerpt, slug, published_at, feature_image, tags } = article;
+                    const categoryName = (tags && tags.length > 0) ? tags[0].name : 'Uncategorized';
 
                     return (
-                        <div key={article.id} className="p-6 hover:bg-gray-50 transition-colors flex items-center gap-6 group">
+                        <div key={id} className="p-6 hover:bg-gray-50 transition-colors flex items-center gap-6 group">
                             {/* Image */}
                             <div className="w-24 h-24 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 relative">
-                                {coverImage ? (
-                                    <img src={coverImage} alt="" className="w-full h-full object-cover" />
+                                {feature_image ? (
+                                    <img src={feature_image} alt="" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-bold">No Image</div>
                                 )}
@@ -57,7 +57,7 @@ const BlogManager = () => {
                                         <Tag size={10} /> {categoryName}
                                     </span>
                                     <span className="text-xs text-gray-400 flex items-center gap-1">
-                                        <Calendar size={12} /> {new Date(publishedAt).toLocaleDateString()}
+                                        <Calendar size={12} /> {new Date(published_at).toLocaleDateString()}
                                     </span>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-800 mb-1 truncate">{title}</h3>
@@ -69,6 +69,7 @@ const BlogManager = () => {
                                 <a
                                     href={`/article/${slug}`}
                                     target="_blank"
+                                    rel="noreferrer"
                                     className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                                     title="View Article"
                                 >

@@ -4,11 +4,11 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import { contentfulService } from '../services/contentfulService';
-import ContentfulRichText from '../components/common/ContentfulRichText';
+import { ghostService } from '../services/ghostService'; // CHANGED: Import ghostService
+import DOMPurify from 'dompurify'; // CHANGED: Import DOMPurify
 
 const ArticleViewer = () => {
-  const { id } = useParams(); // 'id' will now be the SLUG
+  const { id } = useParams(); // 'id' will be the SLUG
   const { settings } = useData();
   const [article, setArticle] = useState(null);
   const [activeTab, setActiveTab] = useState('blogs');
@@ -23,10 +23,11 @@ const ArticleViewer = () => {
     const fetchArticle = async () => {
         try {
             setLoading(true);
-            const data = await contentfulService.getPostBySlug(id);
+            const data = await ghostService.getPostBySlug(id); // CHANGED: Fetch from Ghost
             setArticle(data);
         } catch (error) {
             console.error("Failed to fetch article:", error);
+            setArticle(null);
         } finally {
             setLoading(false);
         }
@@ -37,8 +38,12 @@ const ArticleViewer = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
-  const { title, publishedAt, coverImage, body, categories } = article;
-  const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
+  // CHANGED: Adapt to Ghost Data Structure
+  const { title, published_at, feature_image, html, tags } = article;
+  const categoryName = (tags && tags.length > 0) ? tags[0].name : 'Insight';
+
+  // Sanitize HTML
+  const sanitizedContent = DOMPurify.sanitize(html);
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
@@ -54,7 +59,7 @@ const ArticleViewer = () => {
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-blue-500 mb-4">
                 <span>{categoryName}</span>
                 <span>•</span>
-                <span>{new Date(publishedAt).toLocaleDateString()}</span>
+                <span>{new Date(published_at).toLocaleDateString()}</span>
             </div>
             <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{title}</h1>
 
@@ -90,12 +95,15 @@ const ArticleViewer = () => {
 
         {/* Content */}
         <div className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-             {coverImage && (
-                 <img src={coverImage} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
+             {feature_image && (
+                 <img src={feature_image} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
              )}
 
-             {/* Contentful Rich Text Content */}
-             <ContentfulRichText content={body} />
+             {/* Render Ghost HTML Content */}
+             <div
+                className={`prose max-w-none ${isDark ? 'prose-invert' : ''} ghost-content`}
+                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+             />
         </div>
       </div>
 
