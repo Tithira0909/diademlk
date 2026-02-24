@@ -7,191 +7,20 @@
     hyphens: none !important;
 }
 
-/* Ghost Content (HTML Output) */
-.ghost-content {
+/* BlockNote Overrides */
+.blocknote-content .bn-editor {
+    background-color: transparent;
+    padding: 0;
+}
+
+.blocknote-content .bn-block-content {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: 1.6;
-    color: inherit;
-    word-break: normal;
-    overflow-wrap: break-word;
-    white-space: normal;
 }
 
-/* Typography */
-.ghost-content p {
-    margin-bottom: 1.5em;
-    font-size: 1.125rem;
-}
-
-.ghost-content h1, .ghost-content h2, .ghost-content h3, .ghost-content h4, .ghost-content h5, .ghost-content h6 {
-    margin-top: 2em;
-    margin-bottom: 0.5em;
-    font-weight: 700;
-    line-height: 1.2;
-    color: inherit;
-}
-
-.ghost-content h1 { font-size: 2.5em; }
-.ghost-content h2 { font-size: 2em; }
-.ghost-content h3 { font-size: 1.5em; }
-.ghost-content h4 { font-size: 1.25em; }
-
-.ghost-content a {
-    color: #4f46e5; /* Indigo-600 */
-    text-decoration: underline;
-    transition: color 0.2s;
-}
-
-.ghost-content a:hover {
-    color: #4338ca; /* Indigo-700 */
-}
-
-/* Blockquotes */
-.ghost-content blockquote {
-    border-left: 4px solid #e5e7eb;
-    margin: 1.5em 0;
-    padding-left: 1.5em;
-    font-style: italic;
-    color: #6b7280;
-    background: #f9fafb;
-    padding: 1rem;
-    border-radius: 0 0.5rem 0.5rem 0;
-}
-
-.ghost-content blockquote p {
-    margin: 0;
-}
-
-/* Lists */
-.ghost-content ul {
-    list-style-type: disc;
-    padding-left: 1.5em;
-    margin-bottom: 1.5em;
-}
-
-.ghost-content ol {
-    list-style-type: decimal;
-    padding-left: 1.5em;
-    margin-bottom: 1.5em;
-}
-
-.ghost-content li {
-    margin-bottom: 0.5em;
-    padding-left: 0.5em;
-}
-
-/* Images and Figures (Ghost specific classes often include .kg-image-card etc) */
-.ghost-content figure {
-    margin: 2em 0;
-    max-width: 100%;
-}
-
-.ghost-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 0.5rem;
-    display: block;
-    margin: 0 auto;
-}
-
-.ghost-content figcaption {
-    text-align: center;
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-top: 0.5em;
-    background: #f3f4f6;
-    padding: 0.5em;
-    border-radius: 0.25rem;
-    display: table-caption;
-    caption-side: bottom;
-    width: 100%;
-}
-
-/* Ghost Specific Card Styles (kg-card) */
-.ghost-content .kg-image-card,
-.ghost-content .kg-gallery-card {
-    margin: 2em 0;
-}
-
-.ghost-content .kg-width-wide img {
-    max-width: 85vw;
-}
-
-.ghost-content .kg-width-full img {
-    max-width: 100vw;
-}
-
-/* Tables */
-.ghost-content table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1.5em 0;
-    overflow-x: auto;
-    display: block;
-}
-
-.ghost-content th, .ghost-content td {
-    border: 1px solid #e5e7eb;
-    padding: 0.75em;
-    text-align: left;
-}
-
-.ghost-content th {
-    background-color: #f9fafb;
-    font-weight: 600;
-}
-
-/* Code Blocks */
-.ghost-content pre {
-    background: #1f2937;
-    color: #e5e7eb;
-    padding: 1em;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin: 1.5em 0;
-}
-
-.ghost-content code {
-    background: #f3f4f6;
-    padding: 0.2em 0.4em;
-    border-radius: 0.25rem;
-    font-size: 0.875em;
-    font-family: monospace;
-}
-
-/* Dark Mode Overrides */
-.bg-black .ghost-content {
-    color: #d1d5db;
-}
-
-.bg-black .ghost-content a {
-    color: #818cf8;
-}
-
-.bg-black .ghost-content blockquote {
-    border-left-color: #374151;
-    color: #9ca3af;
-    background: #18181b;
-}
-
-.bg-black .ghost-content figcaption {
-    background: #27272a;
-    color: #a1a1aa;
-}
-
-.bg-black .ghost-content th {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #e5e7eb;
-}
-
-.bg-black .ghost-content td {
-    border-color: #374151;
-}
-
-.bg-black .ghost-content code {
-    background: #27272a;
-    color: #e4e4e7;
+/* Dark Mode Overrides for BlockNote */
+.dark-mode-blocks .bn-editor {
+    color: #e5e7eb; /* Gray-200 */
 }
 
 /* Excerpt Styles */

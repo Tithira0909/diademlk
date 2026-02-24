@@ -137,48 +137,33 @@ app.get('/api/articles', async (req, res) => {
 });
 
 app.post('/api/articles', authenticateToken, async (req, res) => {
-  const { title, category, excerpt, content, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
+  // Updated to match BlockNote & Frontend structure
+  const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
-  // Support both field names for compatibility
-  const contentBody = content || contentHtml;
-  let finalExcerpt = excerpt || excerptHtml;
-
-  // Auto-generate excerpt if empty
-  if (!finalExcerpt && contentBody) {
-      finalExcerpt = contentBody.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
-  }
-
-  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
   try {
     const [result] = await db.query(
-      'INSERT INTO articles (title, category, excerpt, content, image, pdfUrl, readTime, author, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [title, category, finalExcerpt, contentBody, image, pdfUrl, readTime, author, date]
+      'INSERT INTO articles (title, slug, category, excerpt, content, cover_image, published_at, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [title, slug, category, excerpt, content, cover_image, published_at, author || 'Diadem']
     );
-    res.status(201).json({ id: result.insertId, ...req.body, excerpt: finalExcerpt, content: contentBody, date });
+    res.status(201).json({ id: result.insertId, ...req.body });
   } catch (error) {
+    console.error("Insert Article Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
 app.put('/api/articles/:id', authenticateToken, async (req, res) => {
-  const { title, category, excerpt, content, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
-
-  // Support both field names for compatibility
-  const contentBody = content || contentHtml;
-  let finalExcerpt = excerpt || excerptHtml;
-
-  // Auto-generate excerpt if empty
-  if (!finalExcerpt && contentBody) {
-      finalExcerpt = contentBody.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
-  }
+  // Updated to match BlockNote & Frontend structure
+  const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
   try {
     await db.query(
-      'UPDATE articles SET title = ?, category = ?, excerpt = ?, content = ?, image = ?, pdfUrl = ?, readTime = ?, author = ? WHERE id = ?',
-      [title, category, finalExcerpt, contentBody, image, pdfUrl, readTime, author, req.params.id]
+      'UPDATE articles SET title = ?, slug = ?, category = ?, excerpt = ?, content = ?, cover_image = ?, published_at = ?, author = ? WHERE id = ?',
+      [title, slug, category, excerpt, content, cover_image, published_at, author || 'Diadem', req.params.id]
     );
-    res.json({ id: req.params.id, ...req.body, excerpt: finalExcerpt, content: contentBody });
+    res.json({ id: req.params.id, ...req.body });
   } catch (error) {
+    console.error("Update Article Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -204,13 +189,12 @@ app.get('/api/inquiries', authenticateToken, async (req, res) => {
 
 app.post('/api/inquiries', async (req, res) => {
   const { name, email, phone, message } = req.body;
-  const date = new Date().toLocaleString();
   try {
     const [result] = await db.query(
-      'INSERT INTO inquiries (name, email, phone, message, date) VALUES (?, ?, ?, ?, ?)',
-      [name, email, phone, message, date]
+      'INSERT INTO inquiries (name, email, phone, message) VALUES (?, ?, ?, ?)',
+      [name, email, phone, message]
     );
-    res.status(201).json({ id: result.insertId, ...req.body, date });
+    res.status(201).json({ id: result.insertId, ...req.body });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ghostService } from '../services/ghostService';
 
 const DataContext = createContext();
 
@@ -31,9 +30,9 @@ export const DataProvider = ({ children }) => {
         try {
             if (loading) setLoading(true);
 
-            // Fetch Articles from Ghost
-            const ghostPosts = await ghostService.getPosts();
-            setArticles(ghostPosts);
+            // Fetch Articles from Local Database
+            const articlesRes = await fetch(`${API_URL}/articles`);
+            if (articlesRes.ok) setArticles(await articlesRes.json());
 
             // Fetch other data from local backend
             const bannersRes = await fetch(`${API_URL}/banners`);
@@ -77,6 +76,57 @@ export const DataProvider = ({ children }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user.token}`
       } : { 'Content-Type': 'application/json' };
+  };
+
+  // Articles (Local)
+  const addArticle = async (articleData) => {
+    try {
+        const res = await fetch(`${API_URL}/articles`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(articleData)
+        });
+        if (res.ok) {
+            const newArticle = await res.json();
+            setArticles(prev => [newArticle, ...prev]);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Error adding article:", error);
+        return false;
+    }
+  };
+
+  const updateArticle = async (id, articleData) => {
+      try {
+          const res = await fetch(`${API_URL}/articles/${id}`, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify(articleData)
+          });
+          if (res.ok) {
+              const updated = await res.json();
+              setArticles(prev => prev.map(a => a.id === id ? updated : a));
+              return true;
+          }
+          return false;
+      } catch (error) {
+          console.error("Error updating article:", error);
+          return false;
+      }
+  };
+
+  const deleteArticle = async (id) => {
+      try {
+          await fetch(`${API_URL}/articles/${id}`, {
+              method: 'DELETE',
+              headers: getHeaders()
+          });
+          setArticles(prev => prev.filter(a => a.id !== id));
+      } catch (error) {
+           console.error("Error deleting article:", error);
+      }
   };
 
   // Inquiries
@@ -239,6 +289,9 @@ export const DataProvider = ({ children }) => {
       settings,
       currentUser,
       loading,
+      addArticle,
+      updateArticle,
+      deleteArticle,
       addInquiry,
       addUser,
       deleteUser,

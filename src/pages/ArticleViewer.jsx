@@ -4,46 +4,59 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import { ghostService } from '../services/ghostService'; // CHANGED: Import ghostService
-import DOMPurify from 'dompurify'; // CHANGED: Import DOMPurify
+import { BlockNoteView } from "@blocknote/mantine";
+import { useCreateBlockNote } from "@blocknote/react";
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
 
 const ArticleViewer = () => {
   const { id } = useParams(); // 'id' will be the SLUG
-  const { settings } = useData();
+  const { articles, settings, loading: contextLoading } = useData();
   const [article, setArticle] = useState(null);
   const [activeTab, setActiveTab] = useState('blogs');
   const [isDark, setIsDark] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Initialize Read-Only Editor
+  const editor = useCreateBlockNote();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
   useEffect(() => {
-    const fetchArticle = async () => {
-        try {
-            setLoading(true);
-            const data = await ghostService.getPostBySlug(id); // CHANGED: Fetch from Ghost
-            setArticle(data);
-        } catch (error) {
-            console.error("Failed to fetch article:", error);
-            setArticle(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchArticle();
-  }, [id]);
+    if (!contextLoading && articles.length > 0) {
+        const found = articles.find(a => a.slug === id);
+        if (found) {
+            setArticle(found);
+            try {
+                // If content is stored as JSON string, parse it
+                const content = typeof found.content === 'string'
+                    ? JSON.parse(found.content)
+                    : found.content;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+                if (content && Array.isArray(content) && content.length > 0) {
+                     // We need to replace blocks. Since useCreateBlockNote creates an empty doc,
+                     // we replace it with our content.
+                     if(editor) {
+                        editor.replaceBlocks(editor.document, content);
+                     }
+                }
+            } catch (e) {
+                console.error("Failed to parse article content for viewer:", e);
+            }
+        }
+        setLoading(false);
+    } else if (!contextLoading && articles.length === 0) {
+        // Articles array empty but finished loading
+        setLoading(false);
+    }
+  }, [id, articles, contextLoading, editor]);
+
+  if (loading || contextLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
-  // CHANGED: Adapt to Ghost Data Structure
-  const { title, published_at, feature_image, html, tags } = article;
-  const categoryName = (tags && tags.length > 0) ? tags[0].name : 'Insight';
-
-  // Sanitize HTML
-  const sanitizedContent = DOMPurify.sanitize(html);
+  const { title, published_at, cover_image, category } = article;
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
@@ -57,7 +70,7 @@ const ArticleViewer = () => {
         {/* Header */}
         <div className="mb-12">
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-blue-500 mb-4">
-                <span>{categoryName}</span>
+                <span>{category || 'Insight'}</span>
                 <span>•</span>
                 <span>{new Date(published_at).toLocaleDateString()}</span>
             </div>
@@ -95,15 +108,14 @@ const ArticleViewer = () => {
 
         {/* Content */}
         <div className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-             {feature_image && (
-                 <img src={feature_image} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
+             {cover_image && (
+                 <img src={cover_image} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
              )}
 
-             {/* Render Ghost HTML Content */}
-             <div
-                className={`prose max-w-none ${isDark ? 'prose-invert' : ''} ghost-content`}
-                dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-             />
+             {/* BlockNote Renderer (Read-Only) */}
+             <div className={`blocknote-content ${isDark ? 'dark-mode-blocks' : ''}`}>
+                 <BlockNoteView editor={editor} editable={false} theme={isDark ? "dark" : "light"} />
+             </div>
         </div>
       </div>
 

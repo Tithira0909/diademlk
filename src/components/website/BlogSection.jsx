@@ -4,9 +4,8 @@ import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
 const BlogCard = ({ post, isDark }) => {
-    // Ghost Fields: id, title, slug, published_at, excerpt, feature_image, tags
-    const { title, slug, published_at, excerpt, feature_image, tags } = post;
-    const categoryName = (tags && tags.length > 0) ? tags[0].name : 'Insight';
+    // Local DB Fields: id, title, slug, published_at, excerpt, cover_image, category
+    const { title, slug, published_at, excerpt, cover_image, category } = post;
 
     return (
         <Link
@@ -15,9 +14,9 @@ const BlogCard = ({ post, isDark }) => {
         >
             {/* Image Container */}
             <div className="h-48 overflow-hidden relative bg-gray-200">
-                {feature_image ? (
+                {cover_image ? (
                     <img
-                        src={feature_image}
+                        src={cover_image}
                         alt={title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -26,7 +25,7 @@ const BlogCard = ({ post, isDark }) => {
                 )}
 
                 <div className={`absolute top-4 left-4 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-md ${isDark ? 'bg-black/50 text-white' : 'bg-white/80 text-black'}`}>
-                    {categoryName}
+                    {category || 'Insight'}
                 </div>
             </div>
 
