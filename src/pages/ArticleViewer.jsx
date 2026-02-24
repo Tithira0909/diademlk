@@ -4,11 +4,11 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import { sanityService, urlFor } from '../services/sanityService';
-import RichText from '../components/common/RichText';
+import { contentfulService } from '../services/contentfulService';
+import ContentfulRichText from '../components/common/ContentfulRichText';
 
 const ArticleViewer = () => {
-  const { id } = useParams(); // 'id' will now be the SLUG (slug.current)
+  const { id } = useParams(); // 'id' will now be the SLUG
   const { settings } = useData();
   const [article, setArticle] = useState(null);
   const [activeTab, setActiveTab] = useState('blogs');
@@ -23,7 +23,7 @@ const ArticleViewer = () => {
     const fetchArticle = async () => {
         try {
             setLoading(true);
-            const data = await sanityService.getPostBySlug(id);
+            const data = await contentfulService.getPostBySlug(id);
             setArticle(data);
         } catch (error) {
             console.error("Failed to fetch article:", error);
@@ -37,8 +37,7 @@ const ArticleViewer = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
 
-  const { title, publishedAt, mainImage, body, categories } = article;
-  const coverUrl = mainImage ? urlFor(mainImage).width(1200).height(600).url() : null;
+  const { title, publishedAt, coverImage, body, categories } = article;
   const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
 
   return (
@@ -91,12 +90,12 @@ const ArticleViewer = () => {
 
         {/* Content */}
         <div className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
-             {coverUrl && (
-                 <img src={coverUrl} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
+             {coverImage && (
+                 <img src={coverImage} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
              )}
 
-             {/* Portable Text Content */}
-             <RichText content={body} />
+             {/* Contentful Rich Text Content */}
+             <ContentfulRichText content={body} />
         </div>
       </div>
 

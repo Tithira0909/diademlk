@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { sanityService } from '../services/sanityService';
+import { contentfulService } from '../services/contentfulService';
 
 const DataContext = createContext();
 
@@ -31,13 +31,9 @@ export const DataProvider = ({ children }) => {
         try {
             if (loading) setLoading(true);
 
-            // Fetch Articles from Sanity
-            try {
-                const sanityPosts = await sanityService.getPosts();
-                setArticles(sanityPosts);
-            } catch (err) {
-                console.error("Sanity Fetch Failed:", err);
-            }
+            // Fetch Articles from Contentful
+            const contentfulPosts = await contentfulService.getPosts();
+            setArticles(contentfulPosts);
 
             // Fetch other data from local backend
             const bannersRes = await fetch(`${API_URL}/banners`);

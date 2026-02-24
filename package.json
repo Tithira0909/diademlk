@@ -10,10 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@portabletext/react": "^6.0.2",
-    "@sanity/client": "^7.15.0",
-    "@sanity/image-url": "^2.0.3",
+    "@contentful/rich-text-react-renderer": "^16.1.6",
+    "@contentful/rich-text-types": "^17.2.5",
     "@tailwindcss/typography": "^0.5.19",
+    "contentful": "^11.10.4",
     "dompurify": "^3.3.1",
     "lucide-react": "^0.555.0",
     "react": "^19.2.0",

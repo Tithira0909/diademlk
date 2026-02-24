@@ -7,24 +7,24 @@
     hyphens: none !important;
 }
 
-/* Portable Text Content (Sanity) */
-.portable-content {
+/* Contentful Rich Text (Word-like Output) */
+.contentful-content {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: 1.6;
     color: inherit;
     word-break: normal;
     overflow-wrap: break-word;
-    /* This is critical for spacing */
+    /* Ensure content flows naturally */
     white-space: normal;
 }
 
 /* Typography */
-.portable-content p {
+.contentful-content p {
     margin-bottom: 1.5em;
     font-size: 1.125rem;
 }
 
-.portable-content h1, .portable-content h2, .portable-content h3, .portable-content h4, .portable-content h5, .portable-content h6 {
+.contentful-content h1, .contentful-content h2, .contentful-content h3, .contentful-content h4, .contentful-content h5, .contentful-content h6 {
     margin-top: 2em;
     margin-bottom: 0.5em;
     font-weight: 700;
@@ -32,23 +32,23 @@
     color: inherit;
 }
 
-.portable-content h1 { font-size: 2.5em; }
-.portable-content h2 { font-size: 2em; }
-.portable-content h3 { font-size: 1.5em; }
-.portable-content h4 { font-size: 1.25em; }
+.contentful-content h1 { font-size: 2.5em; }
+.contentful-content h2 { font-size: 2em; }
+.contentful-content h3 { font-size: 1.5em; }
+.contentful-content h4 { font-size: 1.25em; }
 
-.portable-content a {
+.contentful-content a {
     color: #4f46e5; /* Indigo-600 */
     text-decoration: underline;
     transition: color 0.2s;
 }
 
-.portable-content a:hover {
+.contentful-content a:hover {
     color: #4338ca; /* Indigo-700 */
 }
 
 /* Blockquotes */
-.portable-content blockquote {
+.contentful-content blockquote {
     border-left: 4px solid #e5e7eb;
     margin: 1.5em 0;
     padding-left: 1.5em;
@@ -59,50 +59,59 @@
     border-radius: 0 0.5rem 0.5rem 0;
 }
 
+.contentful-content blockquote p {
+    margin: 0;
+}
+
 /* Lists - Standard UL/OL */
-.portable-content ul {
+.contentful-content ul {
     list-style-type: disc;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.portable-content ol {
+.contentful-content ol {
     list-style-type: decimal;
     padding-left: 1.5em;
     margin-bottom: 1.5em;
 }
 
-.portable-content li {
+.contentful-content li {
     margin-bottom: 0.5em;
     padding-left: 0.5em;
 }
 
+.contentful-content li p {
+    margin-bottom: 0.5em; /* Handle p inside li from Rich Text */
+}
+
 /* Nested Lists */
-.portable-content ul ul, .portable-content ol ul {
+.contentful-content ul ul, .contentful-content ol ul {
     list-style-type: circle;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
-.portable-content ul ul ul {
+.contentful-content ul ul ul {
     list-style-type: square;
 }
 
 /* Images and Figures */
-.portable-content figure {
+.contentful-content figure {
     margin: 2em 0;
     display: table;
     max-width: 100%;
 }
 
-.portable-content img {
+.contentful-content img {
     max-width: 100%;
     height: auto;
     border-radius: 0.5rem;
     display: block;
+    margin: 0 auto;
 }
 
-.portable-content figcaption {
+.contentful-content figcaption {
     text-align: center;
     font-size: 0.875rem;
     color: #6b7280;
@@ -115,7 +124,7 @@
 }
 
 /* Tables */
-.portable-content table {
+.contentful-content table {
     border-collapse: collapse;
     width: 100%;
     margin: 1.5em 0;
@@ -123,19 +132,19 @@
     display: block;
 }
 
-.portable-content th, .portable-content td {
+.contentful-content th, .contentful-content td {
     border: 1px solid #e5e7eb;
     padding: 0.75em;
     text-align: left;
 }
 
-.portable-content th {
+.contentful-content th {
     background-color: #f9fafb;
     font-weight: 600;
 }
 
 /* Code Blocks */
-.portable-content pre {
+.contentful-content pre {
     background: #1f2937;
     color: #e5e7eb;
     padding: 1em;
@@ -144,7 +153,7 @@
     margin: 1.5em 0;
 }
 
-.portable-content code {
+.contentful-content code {
     background: #f3f4f6;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
@@ -152,7 +161,7 @@
     font-family: monospace;
 }
 
-.portable-content pre code {
+.contentful-content pre code {
     background: transparent;
     padding: 0;
     color: inherit;
@@ -160,40 +169,40 @@
 
 
 /* Dark Mode Overrides */
-.bg-black .portable-content {
+.bg-black .contentful-content {
     color: #d1d5db;
 }
 
-.bg-black .portable-content a {
+.bg-black .contentful-content a {
     color: #818cf8;
 }
 
-.bg-black .portable-content a:hover {
+.bg-black .contentful-content a:hover {
     color: #a5b4fc;
 }
 
-.bg-black .portable-content blockquote {
+.bg-black .contentful-content blockquote {
     border-left-color: #374151;
     color: #9ca3af;
     background: #18181b;
 }
 
-.bg-black .portable-content figcaption {
+.bg-black .contentful-content figcaption {
     background: #27272a;
     color: #a1a1aa;
 }
 
-.bg-black .portable-content th {
+.bg-black .contentful-content th {
     background-color: #1f2937;
     border-color: #374151;
     color: #e5e7eb;
 }
 
-.bg-black .portable-content td {
+.bg-black .contentful-content td {
     border-color: #374151;
 }
 
-.bg-black .portable-content code {
+.bg-black .contentful-content code {
     background: #27272a;
     color: #e4e4e7;
 }

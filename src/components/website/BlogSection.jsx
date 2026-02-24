@@ -2,24 +2,22 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowRight, ChevronRight, Clock } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import { urlFor } from '../../services/sanityService';
 
 const BlogCard = ({ post, isDark }) => {
-    // Sanity Post fields: title, slug, publishedAt, mainImage, excerpt, categories
-    const { title, slug, publishedAt, mainImage, excerpt, categories } = post;
-    const coverUrl = mainImage ? urlFor(mainImage).width(600).height(400).url() : null;
+    // Contentful Fields: id, title, slug, publishedAt, excerpt, coverImage, categories
+    const { title, slug, publishedAt, excerpt, coverImage, categories } = post;
     const categoryName = (categories && categories.length > 0) ? categories[0] : 'Insight';
 
     return (
     <Link
-        to={`/article/${slug.current}`}
+        to={`/article/${slug}`}
         className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col h-full ${isDark ? 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}
     >
         {/* Image Container */}
         <div className="h-48 overflow-hidden relative bg-gray-200">
-            {coverUrl ? (
+            {coverImage ? (
                 <img
-                    src={coverUrl}
+                    src={coverImage}
                     alt={title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -39,14 +37,12 @@ const BlogCard = ({ post, isDark }) => {
                     <Calendar size={12} />
                     <span>{new Date(publishedAt).toLocaleDateString()}</span>
                 </div>
-                {/* Reading time isn't standard in Sanity but can be computed. Omitted for now. */}
             </div>
 
             <h3 className={`font-artistic text-xl font-bold mb-3 line-clamp-2 leading-tight group-hover:text-green-500 transition-colors ${isDark ? 'text-white' : 'text-zinc-900'}`}>
                 {title}
             </h3>
 
-            {/* Excerpt is usually plain text in Sanity schema unless defined otherwise */}
             <p className={`text-sm line-clamp-3 mb-6 leading-relaxed flex-grow excerpt-content ${isDark ? 'text-gray-400' : 'text-zinc-600'}`}>
                 {excerpt}
             </p>
@@ -89,7 +85,7 @@ const BlogSection = ({ isDark }) => {
                     {displayedArticles.length > 0 ? (
                         displayedArticles.map(post => (
                             <BlogCard
-                                key={post._id}
+                                key={post.id}
                                 post={post}
                                 isDark={isDark}
                             />
