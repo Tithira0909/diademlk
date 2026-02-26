@@ -60,7 +60,10 @@ db.query('SELECT 1')
   });
 
 app.use(cors());
-app.use(express.json());
+// INCREASE BODY SIZE LIMIT to 50MB to handle large base64 images from BlockNote
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -133,8 +136,6 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/articles', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM articles ORDER BY id DESC');
-    // SQLite stores boolean as 0/1, ensure types match frontend expectations if needed
-    // JSON content is stored as string, frontend parses it.
     res.json(rows);
   } catch (error) {
     console.error("Fetch Articles Error:", error);

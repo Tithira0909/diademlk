@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, MessageSquare, Users, Image,
   Settings, LogOut, Sun, Moon
@@ -9,6 +9,7 @@ import { useData } from '../../context/DataContext';
 const AdminLayout = () => {
   const { logout, currentUser, loading } = useData();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -24,15 +25,19 @@ const AdminLayout = () => {
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
+  // Auth Guard
   useEffect(() => {
     if (!loading && !currentUser) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
     }
-  }, [currentUser, loading, navigate]);
+  }, [currentUser, loading, navigate, location]);
 
   // Auto-logout on inactivity (15 minutes)
   useEffect(() => {
+    if (!currentUser) return; // Don't run timer if not logged in
+
     let lastActivity = Date.now();
+    let activityInterval;
 
     const updateActivity = () => {
       lastActivity = Date.now();
@@ -40,24 +45,25 @@ const AdminLayout = () => {
 
     const checkActivity = () => {
       if (Date.now() - lastActivity > 15 * 60 * 1000) { // 15 mins
-        logout();
-        navigate('/login');
+        console.log("Auto-logging out due to inactivity");
+        handleLogout();
       }
     };
 
-    const activityInterval = setInterval(checkActivity, 60000); // Check every minute
+    // Only start interval if user is logged in
+    activityInterval = setInterval(checkActivity, 60000); // Check every minute
 
     window.addEventListener('mousemove', updateActivity);
     window.addEventListener('keydown', updateActivity);
     window.addEventListener('click', updateActivity);
 
     return () => {
-      clearInterval(activityInterval);
+      if (activityInterval) clearInterval(activityInterval);
       window.removeEventListener('mousemove', updateActivity);
       window.removeEventListener('keydown', updateActivity);
       window.removeEventListener('click', updateActivity);
     };
-  }, [logout, navigate]);
+  }, [currentUser, logout, navigate]); // Added currentUser to dependency to reset timer on login
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!currentUser) return null;
