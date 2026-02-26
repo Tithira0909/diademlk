@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { ShieldCheck } from 'lucide-react';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -24,8 +23,8 @@ const AdminLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 font-body p-6">
       <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
         <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-                <ShieldCheck size={32} />
+            <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                <img src="/logo-white.png" alt="Diadem Logo" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-2xl font-artistic font-bold text-white mb-2">Admin Portal</h1>
             <p className="text-zinc-500 text-sm">Sign in to manage the Diadem platform</p>

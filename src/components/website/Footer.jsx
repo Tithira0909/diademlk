@@ -35,11 +35,12 @@ const Footer = ({ isDark }) => {
 
           {/* Brand Col */}
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-3 mb-8">
-              <div className={`w-8 h-8 border flex items-center justify-center ${isDark ? 'border-white text-white' : 'border-black text-black'}`}>
-                <span className="font-artistic font-bold">D</span>
-              </div>
-              <span className={`font-artistic font-bold text-2xl tracking-widest ${textHead}`}>DIADEM</span>
+            <div className="mb-8">
+              <img
+                src={isDark ? "/logo-white.png" : "/logo-black.png"}
+                alt="Diadem"
+                className="h-16 w-auto object-contain"
+              />
             </div>
             <p className={`mb-6 leading-relaxed text-sm text-justify ${textBody}`}>
               Strengthening Sri Lanka’s international trade sector by building a resilient infrastructure and empowering local talent.
