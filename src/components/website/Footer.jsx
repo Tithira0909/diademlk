@@ -62,12 +62,36 @@ const Footer = ({ isDark }) => {
           <div className="lg:col-span-3">
             <h4 className={`font-bold mb-6 uppercase text-xs tracking-widest ${textHead}`}>Useful Links</h4>
             <ul className={`space-y-4 text-sm ${textBody}`}>
-              <li>Customs, Sri Lanka</li>
-              <li>BOI (Board of Investment)</li>
-              <li>IDB (Industrial Development Board)</li>
-              <li>Export Agriculture Dept</li>
-              <li>EDB (Export Development Board)</li>
-              <li>NCGIL</li>
+              <li>
+                <a href="https://www.customs.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  Customs, Sri Lanka
+                </a>
+              </li>
+              <li>
+                <a href="https://investsrilanka.com/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  BOI (Board of Investment)
+                </a>
+              </li>
+              <li>
+                <a href="https://idb.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  IDB (Industrial Development Board)
+                </a>
+              </li>
+              <li>
+                <a href="https://dea.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  Export Agriculture Dept
+                </a>
+              </li>
+              <li>
+                <a href="https://www.srilankabusiness.com/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  EDB (Export Development Board)
+                </a>
+              </li>
+              <li>
+                <a href="https://www.ncgil.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  NCGIL
+                </a>
+              </li>
             </ul>
           </div>
 
