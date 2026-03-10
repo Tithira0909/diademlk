@@ -26,14 +26,45 @@ const SECRET_KEY = process.env.SECRET_KEY || 'secret';
 
 // Check Database Connection on Startup
 db.query('SELECT 1')
-  .then(() => console.log('✅ Database connected successfully.'))
+  .then(async () => {
+    console.log('✅ Database connected successfully.');
+    // Initialize Settings Table (Postgres compatible)
+    try {
+      await db.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                facebook_url TEXT,
+                instagram_url TEXT,
+                linkedin_url TEXT,
+                tiktok_url TEXT,
+                youtube_url TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+          `);
+      // Initial insert
+      try {
+          await db.query(`
+            INSERT INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url)
+            VALUES (1, '', '', '', '', '')
+            ON CONFLICT (id) DO NOTHING
+          `);
+      } catch (e) {
+          // Ignore unique constraint error if row exists
+      }
+      console.log('✅ Settings table verified.');
+    } catch (err) {
+      console.error('❌ Settings table init failed:', err.message);
+    }
+  })
   .catch(err => {
     console.error('❌ Database Connection Failed:', err.message);
-    console.error('Hint: Run "npm run setup" to create the database, or check your .env credentials.');
   });
 
 app.use(cors());
-app.use(express.json());
+// INCREASE BODY SIZE LIMIT to 50MB to handle large base64 images from BlockNote
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -114,42 +145,36 @@ app.get('/api/articles', async (req, res) => {
 });
 
 app.post('/api/articles', authenticateToken, async (req, res) => {
-  const { title, category, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
+  const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
-  let finalExcerpt = excerptHtml;
-  // Auto-generate excerpt if empty
-  if (!finalExcerpt && contentHtml) {
-      finalExcerpt = contentHtml.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
-  }
-
-  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
   try {
+    // Add RETURNING id for Postgres compatibility
     const [result] = await db.query(
-      'INSERT INTO articles (title, category, excerpt, content, image, pdfUrl, readTime, author, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [title, category, finalExcerpt, contentHtml, image, pdfUrl, readTime, author, date]
+      'INSERT INTO articles (title, slug, category, excerpt, content, cover_image, published_at, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      [title, slug, category, excerpt, content, cover_image, published_at, author || 'Diadem']
     );
-    res.status(201).json({ id: result.insertId, ...req.body, excerpt: finalExcerpt, content: contentHtml, date });
+    // If returning ID works, insertId will be populated by our wrapper if it parses res.rows[0].id
+    // But to be safe, let's assume result.rows[0].id exists if our wrapper passed it through.
+    const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+
+    res.status(201).json({ id: newId, ...req.body });
   } catch (error) {
+    console.error("Insert Article Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
 app.put('/api/articles/:id', authenticateToken, async (req, res) => {
-  const { title, category, excerptHtml, contentHtml, image, pdfUrl, readTime, author } = req.body;
-
-  let finalExcerpt = excerptHtml;
-  // Auto-generate excerpt if empty
-  if (!finalExcerpt && contentHtml) {
-      finalExcerpt = contentHtml.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
-  }
+  const { title, slug, category, excerpt, content, cover_image, published_at, author } = req.body;
 
   try {
     await db.query(
-      'UPDATE articles SET title = ?, category = ?, excerpt = ?, content = ?, image = ?, pdfUrl = ?, readTime = ?, author = ? WHERE id = ?',
-      [title, category, finalExcerpt, contentHtml, image, pdfUrl, readTime, author, req.params.id]
+      'UPDATE articles SET title = ?, slug = ?, category = ?, excerpt = ?, content = ?, cover_image = ?, published_at = ?, author = ? WHERE id = ?',
+      [title, slug, category, excerpt, content, cover_image, published_at, author || 'Diadem', req.params.id]
     );
-    res.json({ id: req.params.id, ...req.body, excerpt: finalExcerpt, content: contentHtml });
+    res.json({ id: req.params.id, ...req.body });
   } catch (error) {
+    console.error("Update Article Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -175,13 +200,13 @@ app.get('/api/inquiries', authenticateToken, async (req, res) => {
 
 app.post('/api/inquiries', async (req, res) => {
   const { name, email, phone, message } = req.body;
-  const date = new Date().toLocaleString();
   try {
     const [result] = await db.query(
-      'INSERT INTO inquiries (name, email, phone, message, date) VALUES (?, ?, ?, ?, ?)',
-      [name, email, phone, message, date]
+      'INSERT INTO inquiries (name, email, phone, message) VALUES (?, ?, ?, ?) RETURNING id',
+      [name, email, phone, message]
     );
-    res.status(201).json({ id: result.insertId, ...req.body, date });
+    const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+    res.status(201).json({ id: newId, ...req.body });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -202,10 +227,11 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const [result] = await db.query(
-            'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+            'INSERT INTO users (username, password, role) VALUES (?, ?, ?) RETURNING id',
             [username, hashedPassword, role || 'client']
         );
-        res.status(201).json({ id: result.insertId, username, role });
+        const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+        res.status(201).json({ id: newId, username, role });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -234,10 +260,11 @@ app.post('/api/banners', authenticateToken, async (req, res) => {
     const { title, imageUrl, link, active, list_order } = req.body;
     try {
         const [result] = await db.query(
-            'INSERT INTO banners (title, imageUrl, link, active, list_order) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO banners (title, imageUrl, link, active, list_order) VALUES (?, ?, ?, ?, ?) RETURNING id',
             [title, imageUrl, link, active !== undefined ? active : true, list_order || 0]
         );
-        res.status(201).json({ id: result.insertId, ...req.body });
+        const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+        res.status(201).json({ id: newId, ...req.body });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -264,16 +291,37 @@ app.get('/api/views', async (req, res) => {
 
 app.post('/api/views/increment', async (req, res) => {
     try {
-        await db.query('UPDATE site_stats SET views = views + 1 WHERE id = 1');
+        // Postgres UPSERT syntax
+        await db.query(`
+            INSERT INTO site_stats (id, views) VALUES (1, 1)
+            ON CONFLICT (id) DO UPDATE SET views = site_stats.views + 1
+        `);
         res.json({ message: 'View counted' });
     } catch (error) {
-         // Fail silently or create row if missing
-         try {
-             await db.query('INSERT INTO site_stats (id, views) VALUES (1, 1) ON DUPLICATE KEY UPDATE views = views + 1');
-             res.json({ message: 'View counted' });
-         } catch(e) {
-             res.status(500).json({ message: e.message });
-         }
+         res.status(500).json({ message: error.message });
+    }
+});
+
+// --- Settings ---
+app.get('/api/settings', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM settings WHERE id = 1');
+        res.json(rows[0] || {});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.put('/api/settings', authenticateToken, async (req, res) => {
+    const { facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url } = req.body;
+    try {
+        await db.query(
+            'UPDATE settings SET facebook_url = ?, instagram_url = ?, linkedin_url = ?, tiktok_url = ?, youtube_url = ? WHERE id = 1',
+            [facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url]
+        );
+        res.json({ message: 'Settings updated' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

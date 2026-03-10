@@ -35,11 +35,12 @@ const Footer = ({ isDark }) => {
 
           {/* Brand Col */}
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-3 mb-8">
-              <div className={`w-8 h-8 border flex items-center justify-center ${isDark ? 'border-white text-white' : 'border-black text-black'}`}>
-                <span className="font-artistic font-bold">D</span>
-              </div>
-              <span className={`font-artistic font-bold text-2xl tracking-widest ${textHead}`}>DIADEM</span>
+            <div className="mb-8">
+              <img
+                src={isDark ? "/logo-white.png" : "/logo-black.png"}
+                alt="Diadem"
+                className="h-16 w-auto object-contain"
+              />
             </div>
             <p className={`mb-6 leading-relaxed text-sm text-justify ${textBody}`}>
               Strengthening Sri Lanka’s international trade sector by building a resilient infrastructure and empowering local talent.
@@ -61,12 +62,36 @@ const Footer = ({ isDark }) => {
           <div className="lg:col-span-3">
             <h4 className={`font-bold mb-6 uppercase text-xs tracking-widest ${textHead}`}>Useful Links</h4>
             <ul className={`space-y-4 text-sm ${textBody}`}>
-              <li>Customs, Sri Lanka</li>
-              <li>BOI (Board of Investment)</li>
-              <li>IDB (Industrial Development Board)</li>
-              <li>Export Agriculture Dept</li>
-              <li>EDB (Export Development Board)</li>
-              <li>NCGIL</li>
+              <li>
+                <a href="https://www.customs.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  Customs, Sri Lanka
+                </a>
+              </li>
+              <li>
+                <a href="https://investsrilanka.com/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  BOI (Board of Investment)
+                </a>
+              </li>
+              <li>
+                <a href="https://idb.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  IDB (Industrial Development Board)
+                </a>
+              </li>
+              <li>
+                <a href="https://dea.gov.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  Export Agriculture Dept
+                </a>
+              </li>
+              <li>
+                <a href="https://www.srilankabusiness.com/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  EDB (Export Development Board)
+                </a>
+              </li>
+              <li>
+                <a href="https://www.ncgil.lk/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  NCGIL
+                </a>
+              </li>
             </ul>
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, MessageSquare, Users, Image,
   Settings, LogOut, Sun, Moon
@@ -9,6 +9,7 @@ import { useData } from '../../context/DataContext';
 const AdminLayout = () => {
   const { logout, currentUser, loading } = useData();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -21,13 +22,48 @@ const AdminLayout = () => {
     { icon: FileText, label: 'Blogs & Articles', path: '/admin/blogs' },
     { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries' },
     { icon: Users, label: 'User Management', path: '/admin/users' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
+  // Auth Guard
   useEffect(() => {
     if (!loading && !currentUser) {
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
     }
-  }, [currentUser, loading, navigate]);
+  }, [currentUser, loading, navigate, location]);
+
+  // Auto-logout on inactivity (15 minutes)
+  useEffect(() => {
+    if (!currentUser) return; // Don't run timer if not logged in
+
+    let lastActivity = Date.now();
+    let activityInterval;
+
+    const updateActivity = () => {
+      lastActivity = Date.now();
+    };
+
+    const checkActivity = () => {
+      if (Date.now() - lastActivity > 15 * 60 * 1000) { // 15 mins
+        console.log("Auto-logging out due to inactivity");
+        handleLogout();
+      }
+    };
+
+    // Only start interval if user is logged in
+    activityInterval = setInterval(checkActivity, 60000); // Check every minute
+
+    window.addEventListener('mousemove', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('click', updateActivity);
+
+    return () => {
+      if (activityInterval) clearInterval(activityInterval);
+      window.removeEventListener('mousemove', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('click', updateActivity);
+    };
+  }, [currentUser, logout, navigate]); // Added currentUser to dependency to reset timer on login
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!currentUser) return null;
@@ -36,9 +72,8 @@ const AdminLayout = () => {
     <div className="flex min-h-screen bg-gray-100 text-gray-900 font-body">
       {/* Sidebar */}
       <aside className="w-64 bg-zinc-900 text-white flex flex-col fixed h-full z-20">
-        <div className="p-6 border-b border-zinc-800 flex items-center gap-3">
-           <div className="w-8 h-8 bg-white text-black flex items-center justify-center font-bold rounded">D</div>
-           <span className="font-artistic font-bold text-xl tracking-widest">DIADEM</span>
+        <div className="p-6 border-b border-zinc-800 flex items-center justify-start">
+           <img src="/logo-white.png" alt="Diadem" className="h-12 w-auto object-contain" />
         </div>
 
         <nav className="flex-1 p-4 space-y-2">

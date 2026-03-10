@@ -30,11 +30,15 @@ const DashboardOverview = () => {
 
   // Prepare chart data
   const categoryData = articles.reduce((acc, curr) => {
-      acc[curr.category] = (acc[curr.category] || 0) + 1;
+      const cat = curr.category || 'Uncategorized';
+      acc[cat] = (acc[cat] || 0) + 1;
       return acc;
   }, {});
 
-  const pieData = Object.keys(categoryData).map(key => ({ name: key, value: categoryData[key] }));
+  const pieData = Object.keys(categoryData).length > 0
+      ? Object.keys(categoryData).map(key => ({ name: key, value: categoryData[key] }))
+      : [{ name: 'No Data', value: 1 }]; // Fallback if empty
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   // Mock activity data
@@ -62,14 +66,14 @@ const DashboardOverview = () => {
       {/* Charts */}
       <div className="grid lg:grid-cols-2 gap-8">
           {/* Activity Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px]">
               <h3 className="text-lg font-bold mb-6 text-gray-800">Weekly Activity</h3>
-              <div className="h-64" style={{ width: '100%', height: 300 }}>
+              <div className="flex-grow w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={activityData}>
+                    <BarChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
                         <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
                         <Bar dataKey="inquiries" fill="#10b981" radius={[4, 4, 0, 0]} />
                         <Bar dataKey="articles" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -79,9 +83,9 @@ const DashboardOverview = () => {
           </div>
 
           {/* Categories Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[400px]">
               <h3 className="text-lg font-bold mb-6 text-gray-800">Content Distribution</h3>
-              <div className="h-64" style={{ width: '100%', height: 300 }}>
+              <div className="flex-grow w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -102,7 +106,7 @@ const DashboardOverview = () => {
                     </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap gap-4 justify-center mt-4">
+              <div className="flex flex-wrap gap-4 justify-center mt-4 h-12 overflow-hidden">
                   {pieData.map((entry, index) => (
                       <div key={index} className="flex items-center gap-2 text-xs text-gray-500">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>

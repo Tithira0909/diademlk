@@ -2,13 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Quill Font Classes */
-.ql-font-roboto {
-  font-family: 'Roboto', sans-serif;
+/* Custom Utilities */
+.prose {
+    hyphens: none !important;
 }
-.ql-font-lato {
-  font-family: 'Lato', sans-serif;
+
+/* BlockNote Overrides */
+.blocknote-content .bn-editor {
+    background-color: transparent;
+    padding: 0;
 }
-.ql-font-montserrat {
-  font-family: 'Montserrat', sans-serif;
+
+.blocknote-content .bn-block-content {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Dark Mode Overrides for BlockNote */
+.dark-mode-blocks .bn-editor {
+    color: #e5e7eb; /* Gray-200 */
+}
+
+/* Excerpt Styles */
+.excerpt-content {
+    overflow: hidden;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.excerpt-content p {
+    margin-bottom: 0.5em;
 }

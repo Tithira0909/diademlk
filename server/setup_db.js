@@ -1,64 +1,156 @@
-import mysql from 'mysql2/promise';
+import pg from 'pg';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { Client } = pg;
 
 async function setup() {
-    console.log("Starting Database Setup...");
+    console.log("Starting PostgreSQL Database Setup...");
 
-    const connectionConfig = {
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
+    const dbConfig = {
+        user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || 'password',
-        multipleStatements: true // Allow executing schema.sql at once
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
     };
 
-    let connection;
+    const dbName = process.env.DB_NAME || 'diadem_db';
+
+    // 1. Create Database if not exists
+    // Postgres cannot create database inside a transaction block or conditionally easily via query.
+    // We connect to 'postgres' db first.
+    let client = new Client({ ...dbConfig, database: 'postgres' });
 
     try {
-        // 1. Connect without Database
-        console.log("Connecting to MySQL...");
-        connection = await mysql.createConnection(connectionConfig);
-        console.log("Connected.");
+        await client.connect();
 
-        // 2. Create Database
-        const dbName = process.env.DB_NAME || 'diadem_db';
-        console.log(`Creating database '${dbName}' if not exists...`);
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-        console.log("Database ready.");
-
-        // 3. Select Database
-        await connection.changeUser({ database: dbName });
-
-        // 4. Read Schema
-        const schemaPath = path.join(__dirname, 'schema.sql');
-        console.log(`Reading schema from ${schemaPath}...`);
-        const schema = fs.readFileSync(schemaPath, 'utf8');
-
-        // 5. Execute Schema
-        console.log("Executing schema...");
-        await connection.query(schema);
-        console.log("Schema applied successfully.");
-
-        console.log("\n✅ Setup Complete! You can now start the server.");
-
-    } catch (error) {
-        console.error("\n❌ Setup Failed:");
-        console.error(error.message);
-        if (error.code === 'ECONNREFUSED') {
-            console.error("Hint: Is your MySQL server running?");
-        } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-            console.error("Hint: Check your DB_USER and DB_PASSWORD in .env");
+        const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = $1`, [dbName]);
+        if (res.rowCount === 0) {
+            console.log(`Creating database '${dbName}'...`);
+            await client.query(`CREATE DATABASE "${dbName}"`);
+        } else {
+            console.log(`Database '${dbName}' already exists.`);
         }
+        await client.end();
+
+    } catch (err) {
+        console.error("Error creating database:", err.message);
+        if (client) await client.end();
         process.exit(1);
-    } finally {
-        if (connection) await connection.end();
+    }
+
+    // 2. Connect to the specific database and create tables
+    client = new Client({ ...dbConfig, database: dbName });
+
+    try {
+        await client.connect();
+        console.log(`Connected to '${dbName}'. Creating tables...`);
+
+        // Users
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'client',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Articles
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS articles (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) NOT NULL UNIQUE,
+                excerpt TEXT,
+                content TEXT,
+                cover_image VARCHAR(500),
+                category VARCHAR(100),
+                published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                author VARCHAR(100) DEFAULT 'Diadem',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Inquiries
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS inquiries (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255),
+                phone VARCHAR(50),
+                message TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Banners
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS banners (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255),
+                imageUrl VARCHAR(500) NOT NULL,
+                link VARCHAR(500),
+                active BOOLEAN DEFAULT TRUE,
+                list_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Site Stats
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS site_stats (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                views INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Settings
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                facebook_url VARCHAR(255),
+                instagram_url VARCHAR(255),
+                linkedin_url VARCHAR(255),
+                tiktok_url VARCHAR(255),
+                youtube_url VARCHAR(255),
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Seed Data
+        console.log("Seeding initial data...");
+
+        // Admin User (password: 'password')
+        // Use ON CONFLICT to avoid errors on re-run
+        await client.query(`
+            INSERT INTO users (username, password, role)
+            VALUES ('admin', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
+            ON CONFLICT (username) DO NOTHING;
+        `);
+
+        await client.query(`
+            INSERT INTO site_stats (id, views) VALUES (1, 0)
+            ON CONFLICT (id) DO NOTHING;
+        `);
+
+        await client.query(`
+            INSERT INTO settings (id, facebook_url, instagram_url, linkedin_url, tiktok_url, youtube_url)
+            VALUES (1, '', '', '', '', '')
+            ON CONFLICT (id) DO NOTHING;
+        `);
+
+        console.log("✅ Setup Complete! You can now start the server.");
+        await client.end();
+
+    } catch (err) {
+        console.error("❌ Setup Failed:", err);
+        await client.end();
+        process.exit(1);
     }
 }
 

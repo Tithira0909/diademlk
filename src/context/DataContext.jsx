@@ -11,6 +11,7 @@ export const DataProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [banners, setBanners] = useState([]);
   const [siteViews, setSiteViews] = useState(0);
+  const [settings, setSettings] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,29 +22,24 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('diadem_currentUser'));
     if (storedUser) setCurrentUser(storedUser);
-    setLoading(false); // Initial load complete
   }, []);
 
   // Fetch Initial Data (Public + Protected if logged in)
   useEffect(() => {
     const fetchData = async () => {
         try {
-            // Only set loading if we are doing a hard refresh or initial fetch
-            // We don't want to flicker loading on every render
             if (loading) setLoading(true);
 
-            const token = currentUser?.token;
-
-            // Articles are public
+            // Fetch Articles from Local Database
             const articlesRes = await fetch(`${API_URL}/articles`);
-            if (articlesRes.ok) {
-                setArticles(await articlesRes.json());
-            } else {
-                console.error("Articles Fetch Failed:", articlesRes.status, await articlesRes.text());
-            }
+            if (articlesRes.ok) setArticles(await articlesRes.json());
 
+            // Fetch other data from local backend
             const bannersRes = await fetch(`${API_URL}/banners`);
             if (bannersRes.ok) setBanners(await bannersRes.json());
+
+            const settingsRes = await fetch(`${API_URL}/settings`);
+            if (settingsRes.ok) setSettings(await settingsRes.json());
 
             const viewsRes = await fetch(`${API_URL}/views`);
             if (viewsRes.ok) {
@@ -52,6 +48,7 @@ export const DataProvider = ({ children }) => {
             }
 
             // Protected Data
+            const token = currentUser?.token;
             if (token) {
                  const headers = { 'Authorization': `Bearer ${token}` };
                  const inquiriesRes = await fetch(`${API_URL}/inquiries`, { headers });
@@ -69,7 +66,7 @@ export const DataProvider = ({ children }) => {
     };
 
     fetchData();
-  }, [currentUser]); // Re-fetch when user changes
+  }, [currentUser]);
 
   // --- ACTIONS ---
 
@@ -81,13 +78,13 @@ export const DataProvider = ({ children }) => {
       } : { 'Content-Type': 'application/json' };
   };
 
-  // Articles
-  const addArticle = async (article) => {
+  // Articles (Local)
+  const addArticle = async (articleData) => {
     try {
         const res = await fetch(`${API_URL}/articles`, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify(article)
+            body: JSON.stringify(articleData)
         });
         if (res.ok) {
             const newArticle = await res.json();
@@ -101,16 +98,16 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const updateArticle = async (id, updatedArticle) => {
+  const updateArticle = async (id, articleData) => {
       try {
           const res = await fetch(`${API_URL}/articles/${id}`, {
               method: 'PUT',
               headers: getHeaders(),
-              body: JSON.stringify(updatedArticle)
+              body: JSON.stringify(articleData)
           });
           if (res.ok) {
-              const data = await res.json();
-              setArticles(prev => prev.map(a => (a.id === id ? { ...a, ...data } : a)));
+              const updated = await res.json();
+              setArticles(prev => prev.map(a => a.id === id ? updated : a));
               return true;
           }
           return false;
@@ -128,7 +125,7 @@ export const DataProvider = ({ children }) => {
           });
           setArticles(prev => prev.filter(a => a.id !== id));
       } catch (error) {
-          console.error("Error deleting article:", error);
+           console.error("Error deleting article:", error);
       }
   };
 
@@ -137,12 +134,11 @@ export const DataProvider = ({ children }) => {
     try {
         const res = await fetch(`${API_URL}/inquiries`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Public endpoint
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inquiry)
         });
         if (res.ok) {
             const newInquiry = await res.json();
-            // Only update local state if we are admin/can see it, otherwise it's just sent
             if(currentUser) setInquiries(prev => [newInquiry, ...prev]);
         }
     } catch (error) {
@@ -211,7 +207,26 @@ export const DataProvider = ({ children }) => {
       }
   };
 
-  // File Upload Helper
+  // Settings
+  const updateSettings = async (newSettings) => {
+      try {
+          const res = await fetch(`${API_URL}/settings`, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify(newSettings)
+          });
+          if (res.ok) {
+              setSettings(newSettings);
+              return true;
+          }
+          return false;
+      } catch (error) {
+          console.error("Error updating settings:", error);
+          return false;
+      }
+  };
+
+  // File Upload Helper (Local)
   const uploadFile = async (file) => {
       const formData = new FormData();
       formData.append('file', file);
@@ -246,7 +261,7 @@ export const DataProvider = ({ children }) => {
         });
 
         if (res.ok) {
-            const data = await res.json(); // { id, username, role, token }
+            const data = await res.json();
             setCurrentUser(data);
             localStorage.setItem('diadem_currentUser', JSON.stringify(data));
             return true;
@@ -271,6 +286,7 @@ export const DataProvider = ({ children }) => {
       users,
       banners,
       siteViews,
+      settings,
       currentUser,
       loading,
       addArticle,
@@ -281,6 +297,7 @@ export const DataProvider = ({ children }) => {
       deleteUser,
       addBanner,
       deleteBanner,
+      updateSettings,
       uploadFile,
       incrementViews,
       login,

@@ -1,25 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { ArrowLeft, Download, FileText, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import DOMPurify from 'dompurify';
+import { BlockNoteView } from "@blocknote/mantine";
+import { useCreateBlockNote } from "@blocknote/react";
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
 
 const ArticleViewer = () => {
-  const { id } = useParams();
-  const { articles } = useData();
+  const { id } = useParams(); // 'id' will be the SLUG
+  const { articles, settings, loading: contextLoading } = useData();
   const [article, setArticle] = useState(null);
-  const [activeTab, setActiveTab] = useState('blogs'); // For Navbar highlighting
-  const [isDark, setIsDark] = useState(false); // Can be connected to context later or kept local
+  const [activeTab, setActiveTab] = useState('blogs');
+  const [isDark, setIsDark] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize Read-Only Editor
+  const editor = useCreateBlockNote();
 
   useEffect(() => {
-    // ID comes as string from router, but usually stored as number in data
-    const found = articles.find(a => a.id.toString() === id);
-    setArticle(found);
-  }, [id, articles]);
+    window.scrollTo(0, 0);
+  }, [id]);
 
-  if (!article) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  useEffect(() => {
+    if (!contextLoading && articles.length > 0) {
+        const found = articles.find(a => a.slug === id);
+        if (found) {
+            setArticle(found);
+            try {
+                // If content is stored as JSON string, parse it
+                const content = typeof found.content === 'string'
+                    ? JSON.parse(found.content)
+                    : found.content;
+
+                if (content && Array.isArray(content) && content.length > 0) {
+                     // We need to replace blocks. Since useCreateBlockNote creates an empty doc,
+                     // we replace it with our content.
+                     if(editor) {
+                        editor.replaceBlocks(editor.document, content);
+                     }
+                }
+            } catch (e) {
+                console.error("Failed to parse article content for viewer:", e);
+            }
+        }
+        setLoading(false);
+    } else if (!contextLoading && articles.length === 0) {
+        // Articles array empty but finished loading
+        setLoading(false);
+    }
+  }, [id, articles, contextLoading, editor]);
+
+  if (loading || contextLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
+
+  const { title, published_at, cover_image, category } = article;
 
   return (
     <div className={`min-h-screen font-body transition-colors duration-500 ${isDark ? 'bg-black text-white' : 'bg-white text-zinc-900'}`}>
@@ -33,58 +70,53 @@ const ArticleViewer = () => {
         {/* Header */}
         <div className="mb-12">
             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-blue-500 mb-4">
-                <span>{article.category}</span>
+                <span>{category || 'Insight'}</span>
                 <span>•</span>
-                <span>{article.date}</span>
+                <span>{new Date(published_at).toLocaleDateString()}</span>
             </div>
-            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{article.title}</h1>
-            <div
-                className={`text-xl leading-relaxed break-words [&>*]:max-w-full ${isDark ? 'text-gray-400' : 'text-gray-600'}`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.excerpt) }}
-            />
+            <h1 className="font-artistic text-3xl md:text-5xl font-bold leading-tight mb-6">{title}</h1>
+
+            {/* Social Links */}
+            <div className="flex items-center gap-4 mb-6">
+                {settings?.facebook_url && (
+                    <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:scale-110 transition-transform">
+                        <Facebook size={24} />
+                    </a>
+                )}
+                {settings?.instagram_url && (
+                    <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:scale-110 transition-transform">
+                        <Instagram size={24} />
+                    </a>
+                )}
+                {settings?.linkedin_url && (
+                    <a href={settings.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:scale-110 transition-transform">
+                        <Linkedin size={24} />
+                    </a>
+                )}
+                {settings?.tiktok_url && (
+                    <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer" className={`hover:scale-110 transition-transform ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Video size={24} />
+                    </a>
+                )}
+                {settings?.youtube_url && (
+                    <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:scale-110 transition-transform">
+                        <Youtube size={24} />
+                    </a>
+                )}
+            </div>
         </div>
 
-        {/* PDF Viewer or Content */}
-        {article.pdfUrl ? (
-            <div className="space-y-6">
-                 <div className="bg-gray-100 p-4 rounded-lg flex items-center justify-between border border-gray-200">
-                     <div className="flex items-center gap-3">
-                         <div className="bg-red-500 text-white p-2 rounded">
-                             <FileText size={24} />
-                         </div>
-                         <div>
-                             <p className="text-sm font-bold text-gray-800">Attached Document</p>
-                             <p className="text-xs text-gray-500">PDF Format</p>
-                         </div>
-                     </div>
-                     <a href={article.pdfUrl} download className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline">
-                         <Download size={16} /> Download
-                     </a>
-                 </div>
+        {/* Content */}
+        <div className={`${isDark ? 'text-gray-300' : 'text-gray-800'}`}>
+             {cover_image && (
+                 <img src={cover_image} alt={title} className="w-full h-auto object-cover rounded-xl mb-12 shadow-lg" />
+             )}
 
-                 {/* Iframe Viewer */}
-                 <div className="w-full h-[800px] border rounded-xl overflow-hidden shadow-lg bg-gray-50">
-                     <iframe
-                        src={article.pdfUrl}
-                        className="w-full h-full"
-                        title="PDF Viewer"
-                     >
-                        <div className="flex items-center justify-center h-full text-gray-500 gap-2">
-                             <AlertCircle />
-                             <p>Your browser does not support PDFs. <a href={article.pdfUrl} className="underline text-blue-500">Download the PDF</a> to view it.</p>
-                        </div>
-                     </iframe>
-                 </div>
-            </div>
-        ) : (
-            <div className={`prose prose-lg max-w-none break-words [&>*]:max-w-full ${isDark ? 'prose-invert' : ''}`}>
-                 <img src={article.image} alt={article.title} className="w-full h-96 object-cover rounded-xl mb-8" />
-                 <div
-                    className="break-words [&>*]:max-w-full"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
-                 />
-            </div>
-        )}
+             {/* BlockNote Renderer (Read-Only) */}
+             <div className={`blocknote-content ${isDark ? 'dark-mode-blocks' : ''}`}>
+                 <BlockNoteView editor={editor} editable={false} theme={isDark ? "dark" : "light"} />
+             </div>
+        </div>
       </div>
 
       <Footer isDark={isDark} />
