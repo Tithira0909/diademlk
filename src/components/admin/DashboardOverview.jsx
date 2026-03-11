@@ -64,7 +64,7 @@ const DashboardOverview = () => {
           {/* Activity Chart */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold mb-6 text-gray-800">Weekly Activity</h3>
-              <div className="h-64">
+              <div className="h-64" style={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={activityData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
@@ -81,7 +81,7 @@ const DashboardOverview = () => {
           {/* Categories Chart */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <h3 className="text-lg font-bold mb-6 text-gray-800">Content Distribution</h3>
-              <div className="h-64">
+              <div className="h-64" style={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie

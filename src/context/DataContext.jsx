@@ -101,6 +101,25 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  const updateArticle = async (id, updatedArticle) => {
+      try {
+          const res = await fetch(`${API_URL}/articles/${id}`, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify(updatedArticle)
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setArticles(prev => prev.map(a => (a.id === id ? { ...a, ...data } : a)));
+              return true;
+          }
+          return false;
+      } catch (error) {
+          console.error("Error updating article:", error);
+          return false;
+      }
+  };
+
   const deleteArticle = async (id) => {
       try {
           await fetch(`${API_URL}/articles/${id}`, {
@@ -255,6 +274,7 @@ export const DataProvider = ({ children }) => {
       currentUser,
       loading,
       addArticle,
+      updateArticle,
       deleteArticle,
       addInquiry,
       addUser,

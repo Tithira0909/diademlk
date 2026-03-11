@@ -3,8 +3,9 @@ import { useData } from '../../context/DataContext';
 import { Plus, Trash2, Edit2, FileText, Image as ImageIcon, X } from 'lucide-react';
 
 const BlogManager = () => {
-  const { articles, addArticle, deleteArticle, uploadFile } = useData();
+  const { articles, addArticle, updateArticle, deleteArticle, uploadFile } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newArticle, setNewArticle] = useState({
     title: '',
     category: '',
@@ -38,6 +39,36 @@ const BlogManager = () => {
       }
   };
 
+  const handleEdit = (article) => {
+    setEditingId(article.id);
+    setNewArticle({
+        title: article.title,
+        category: article.category,
+        excerpt: article.excerpt,
+        content: article.content || '',
+        image: article.image,
+        readTime: article.readTime || '5 min read',
+        author: article.author || 'Admin',
+        pdfUrl: article.pdfUrl || ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setNewArticle({
+        title: '',
+        category: '',
+        excerpt: '',
+        content: '',
+        image: '',
+        readTime: '5 min read',
+        author: 'Admin',
+        pdfUrl: ''
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if(!newArticle.title || !newArticle.category) return;
@@ -46,22 +77,18 @@ const BlogManager = () => {
     const finalArticle = {
         ...newArticle,
         image: newArticle.image || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        content: newArticle.content || `<p>${newArticle.excerpt}</p>`
+        content: newArticle.content
     };
 
-    const success = await addArticle(finalArticle);
+    let success;
+    if (editingId) {
+        success = await updateArticle(editingId, finalArticle);
+    } else {
+        success = await addArticle(finalArticle);
+    }
+
     if (success) {
-        setIsModalOpen(false);
-        setNewArticle({
-            title: '',
-            category: '',
-            excerpt: '',
-            content: '',
-            image: '',
-            readTime: '5 min read',
-            author: 'Admin',
-            pdfUrl: ''
-        });
+        handleClose();
     } else {
         alert('Failed to save article');
     }
@@ -114,9 +141,14 @@ const BlogManager = () => {
                           {article.pdfUrl ? <span className="text-green-500 font-bold text-xs">Yes</span> : <span className="text-gray-400 text-xs">No</span>}
                       </td>
                       <td className="p-4 text-right">
-                        <button onClick={() => deleteArticle(article.id)} className="text-red-400 hover:text-red-600 p-2 transition-colors">
-                          <Trash2 size={18} />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => handleEdit(article)} className="text-blue-400 hover:text-blue-600 p-2 transition-colors">
+                                <Edit2 size={18} />
+                            </button>
+                            <button onClick={() => deleteArticle(article.id)} className="text-red-400 hover:text-red-600 p-2 transition-colors">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
                       </td>
                     </tr>
                 ))
@@ -130,8 +162,8 @@ const BlogManager = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-800">New Article</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-black"><X /></button>
+              <h2 className="text-xl font-bold text-gray-800">{editingId ? 'Edit Article' : 'New Article'}</h2>
+              <button onClick={handleClose} className="text-gray-400 hover:text-black"><X /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -149,6 +181,11 @@ const BlogManager = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-600">Excerpt</label>
                 <textarea required name="excerpt" value={newArticle.excerpt} onChange={handleChange} rows="3" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Brief summary..."></textarea>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-600">Content</label>
+                <textarea name="content" value={newArticle.content} onChange={handleChange} rows="6" className="w-full p-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Full article content (HTML supported)..."></textarea>
               </div>
 
               <div className="space-y-2">
@@ -178,8 +215,10 @@ const BlogManager = () => {
               </div>
 
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
-                <button type="submit" disabled={uploading} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">Publish Article</button>
+                <button type="button" onClick={handleClose} className="px-6 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
+                <button type="submit" disabled={uploading} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">
+                    {editingId ? 'Update Article' : 'Publish Article'}
+                </button>
               </div>
             </form>
           </div>

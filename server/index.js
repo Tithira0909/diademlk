@@ -37,6 +37,10 @@ app.use(express.json());
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve frontend statically
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
 // --- FILE UPLOAD SETUP ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -71,7 +75,7 @@ app.post('/api/upload', authenticateToken, upload.single('file'), (req, res) => 
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const fileUrl = `/uploads/${req.file.filename}`;
     res.json({ url: fileUrl });
 });
 
@@ -118,6 +122,19 @@ app.post('/api/articles', authenticateToken, async (req, res) => {
       [title, category, excerpt, content, image, pdfUrl, readTime, author, date]
     );
     res.status(201).json({ id: result.insertId, ...req.body, date });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/articles/:id', authenticateToken, async (req, res) => {
+  const { title, category, excerpt, content, image, pdfUrl, readTime, author } = req.body;
+  try {
+    await db.query(
+      'UPDATE articles SET title = ?, category = ?, excerpt = ?, content = ?, image = ?, pdfUrl = ?, readTime = ?, author = ? WHERE id = ?',
+      [title, category, excerpt, content, image, pdfUrl, readTime, author, req.params.id]
+    );
+    res.json({ id: req.params.id, ...req.body });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -246,6 +263,10 @@ app.post('/api/views/increment', async (req, res) => {
     }
 });
 
+// Handle SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
