@@ -3,6 +3,17 @@ import { useData } from '../../context/DataContext';
 import { Save, X, Image as ImageIcon } from 'lucide-react';
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import {
+  FormattingToolbar,
+  FormattingToolbarController,
+  BlockTypeSelect,
+  BasicTextStyleButton,
+  ColorStyleButton,
+  NestBlockButton,
+  UnnestBlockButton,
+  CreateLinkButton,
+  TextAlignButton,
+} from "@blocknote/react";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
@@ -31,6 +42,48 @@ const BlogEditor = ({ article, onClose }) => {
            console.error("Image upload failed", e);
            return "https://via.placeholder.com/150"; // Fallback
        }
+    },
+    pasteHandler: (context) => {
+      const { event, editor, defaultPasteHandler } = context;
+
+      const html = event.clipboardData?.getData("text/html");
+
+      // Handle word paste issue where bullets aren't appearing correctly and line spacing is huge
+      // Check if it's from MS Word
+      if (html && (html.includes('urn:schemas-microsoft-com:office:office') || html.includes('mso-') || html.includes('MsoListParagraph'))) {
+        let cleanHtml = html;
+
+        // 1. Remove the fake bullet symbol spans
+        cleanHtml = cleanHtml.replace(/<span[^>]*style="[^"]*mso-list:Ignore[^"]*"[^>]*>.*?<\/span>/gi, '');
+
+        // 2. Convert Word list paragraphs to semantic list items
+        cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+        cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+
+        // 3. Wrap adjacent <li> tags with <ul> so it parses correctly
+        cleanHtml = cleanHtml.replace(/(<li>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
+
+        // 4. Strip out Word's problematic inline layout styles
+        cleanHtml = cleanHtml.replace(/line-height:[^;"]+;?/gi, '');
+        cleanHtml = cleanHtml.replace(/margin(?:-top|-bottom|-left|-right)?:[^;"]+;?/gi, '');
+        cleanHtml = cleanHtml.replace(/mso-[a-z0-9-]+:[^;"]+;?/gi, '');
+
+        // Clean up empty style attributes left behind
+        cleanHtml = cleanHtml.replace(/style=""/gi, '');
+
+        // Use the editor to paste our cleaned HTML safely
+        try {
+           editor._tiptapEditor.commands.insertContent(cleanHtml);
+           // We handled the paste event, return true to prevent default
+           return true;
+        } catch(err) {
+           console.error("Failed to insert cleaned HTML", err);
+           // Fall back to default
+        }
+      }
+
+      // Call default paste handler for everything else
+      return defaultPasteHandler();
     }
   });
 
@@ -166,7 +219,27 @@ const BlogEditor = ({ article, onClose }) => {
                       <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Content Editor</span>
                   </div>
                   <div className="p-4 flex-grow">
-                     <BlockNoteView editor={editor} theme={"light"} />
+                     <BlockNoteView editor={editor} theme={"light"} formattingToolbar={false}>
+                        <FormattingToolbarController
+                            formattingToolbar={() => (
+                                <FormattingToolbar>
+                                    <BlockTypeSelect key={"blockTypeSelect"} />
+                                    <BasicTextStyleButton basicTextStyle={"bold"} key={"boldStyleButton"} />
+                                    <BasicTextStyleButton basicTextStyle={"italic"} key={"italicStyleButton"} />
+                                    <BasicTextStyleButton basicTextStyle={"underline"} key={"underlineStyleButton"} />
+                                    <BasicTextStyleButton basicTextStyle={"strike"} key={"strikeStyleButton"} />
+                                    <TextAlignButton textAlignment={"left"} key={"textAlignLeftButton"} />
+                                    <TextAlignButton textAlignment={"center"} key={"textAlignCenterButton"} />
+                                    <TextAlignButton textAlignment={"right"} key={"textAlignRightButton"} />
+                                    <TextAlignButton textAlignment={"justify"} key={"textAlignJustifyButton"} />
+                                    <ColorStyleButton key={"colorStyleButton"} />
+                                    <NestBlockButton key={"nestBlockButton"} />
+                                    <UnnestBlockButton key={"unnestBlockButton"} />
+                                    <CreateLinkButton key={"createLinkButton"} />
+                                </FormattingToolbar>
+                            )}
+                        />
+                     </BlockNoteView>
                   </div>
               </div>
 
