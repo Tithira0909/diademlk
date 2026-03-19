@@ -21,8 +21,9 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'tiptap-vendor': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-text-align', '@tiptap/extension-image', '@tiptap/extension-link'],
+          'lexical-vendor': ['lexical', '@lexical/html', '@lexical/rich-text', '@lexical/list', '@lexical/link', '@lexical/utils', '@lexical/markdown', '@lexical/selection', '@lexical/table'],
           'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
+          'blocknote-vendor': ['@blocknote/core', '@blocknote/react', '@blocknote/mantine'],
           'recharts-vendor': ['recharts'],
           'three-vendor': ['three']
         }
