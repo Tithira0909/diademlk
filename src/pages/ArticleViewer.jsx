@@ -3,10 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
-import { BlockNoteView } from "@blocknote/mantine";
-import { useCreateBlockNote } from "@blocknote/react";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
 import Footer from '../components/website/Footer';
 
 
@@ -23,10 +19,6 @@ const ArticleViewer = () => {
 
   // Content state variables
   const [contentHtml, setContentHtml] = useState('');
-  const [legacyBlocks, setLegacyBlocks] = useState(null);
-
-  // We initialize the BlockNote editor safely
-  const legacyEditor = useCreateBlockNote();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -39,42 +31,26 @@ const ArticleViewer = () => {
             setArticle(found);
 
             let html = found.content || '';
-            let isLegacy = false;
-            let parsedBlocks = null;
 
             try {
                 const parsed = JSON.parse(found.content);
                 if (typeof parsed === 'string') {
                     html = parsed;
                 } else if (Array.isArray(parsed) && parsed.length > 0) {
-                    isLegacy = true;
-                    parsedBlocks = parsed;
+                    html = '<p><em>Error: Legacy BlockNote format is no longer supported. Please open this article in the admin panel and re-save it to migrate it to Lexical HTML.</em></p>';
                 }
             } catch (e) {
                 // It's probably already raw HTML
             }
 
-            if (isLegacy && parsedBlocks) {
-               setLegacyBlocks(parsedBlocks);
-               if (legacyEditor) {
-                  // Only replace if it hasn't been set to prevent crashes
-                  try {
-                      legacyEditor.replaceBlocks(legacyEditor.document, parsedBlocks);
-                  } catch(err) {
-                      console.error("Failed to load legacy blocks into BlockNote", err);
-                  }
-               }
-            } else {
-               setContentHtml(html);
-               setLegacyBlocks(null);
-            }
+            setContentHtml(html);
         }
         setLoading(false);
     } else if (!contextLoading && articles.length === 0) {
         // Articles array empty but finished loading
         setLoading(false);
     }
-  }, [id, articles, contextLoading, legacyEditor]);
+  }, [id, articles, contextLoading]);
 
   if (loading || contextLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
@@ -136,13 +112,7 @@ const ArticleViewer = () => {
              )}
 
              {/* BlockNote Renderer (Read-Only) */}
-             {legacyBlocks ? (
-                 <div className={`blocknote-content ${isDark ? 'dark-mode-blocks' : ''}`}>
-                     <BlockNoteView editor={legacyEditor} editable={false} theme={isDark ? "dark" : "light"} />
-                 </div>
-             ) : (
-                 <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'}`} dangerouslySetInnerHTML={{ __html: contentHtml }} />
-             )}
+             <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'}`} dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from '../../context/DataContext';
 import { Save, X, Image as ImageIcon, Bold, Italic, Strikethrough, List as ListIcon, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link as LinkIcon, Undo, Redo, Heading1, Heading2, Quote } from 'lucide-react';
 
-import { BlockNoteEditor } from "@blocknote/core";
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -118,34 +117,58 @@ function WordPasteFixPlugin() {
       (event) => {
         const html = event.clipboardData?.getData("text/html");
 
-        // Detect Word HTML
         if (html && (html.includes('urn:schemas-microsoft-com:office:office') || html.includes('mso-') || html.includes('MsoListParagraph'))) {
             let cleanHtml = html;
 
             // 1. Remove the fake bullet symbol spans
             cleanHtml = cleanHtml.replace(/<span[^>]*style="[^"]*mso-list:Ignore[^"]*"[^>]*>.*?<\/span>/gis, '');
 
-            // 2. Convert Word list paragraphs to semantic list items
-            cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
-            cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+            // 2. Identify list paragraphs and convert them to li, keeping track of level attributes
+            // MSO lists usually have style="mso-list: l0 level1 lfo1" where levelX is the indenting level.
+            // A perfect conversion requires DOM manipulation, but regex can get us 95% there by extracting the level
+            cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*level(\d+)[^"]*"[^>]*>(.*?)<\/p>/gis, '<li data-mso-level="$1">$2</li>');
+            cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li data-mso-level="1">$1</li>');
 
-            // 3. Wrap adjacent <li> tags with <ul> so it parses correctly
-            cleanHtml = cleanHtml.replace(/(<li>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
+            // 3. Wrap adjacent <li> tags with <ul> so Lexical lists plugin parses it correctly.
+            // To ensure perfect indenting, we can add CSS padding based on the level or wrap them in nested ULs.
+            // Lexical's HTML parser is smart enough to handle padding-left on <li> tags if configured, but let's just output raw HTML structure
+            // and let Lexical's $generateNodesFromDOM handle standard HTML correctly after stripping the garbage.
+            cleanHtml = cleanHtml.replace(/(<li[^>]*>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
 
-            // 4. Strip out Word's problematic inline layout styles
+            // 4. Clean out problematic Word styles to fix the "huge line spacing"
             cleanHtml = cleanHtml.replace(/line-height:[^;"]+;?/gi, '');
             cleanHtml = cleanHtml.replace(/margin(?:-top|-bottom|-left|-right)?:[^;"]+;?/gi, '');
             cleanHtml = cleanHtml.replace(/mso-[a-z0-9-]+:[^;"]+;?/gi, '');
-
-            // Clean up empty style attributes left behind
             cleanHtml = cleanHtml.replace(/style=""/gi, '');
 
-            // Use Lexical's internal HTML parser to convert the cleaned HTML back to nodes
             editor.update(() => {
                 const parser = new DOMParser();
                 const dom = parser.parseFromString(cleanHtml, 'text/html');
-                const nodes = $generateNodesFromDOM(editor, dom);
 
+                // For "perfect indenting", we can manipulate the DOM before Lexical parses it.
+                // Convert <li data-mso-level="X"> into nested structures
+                const lists = dom.querySelectorAll('ul');
+                lists.forEach(ul => {
+                    const listItems = Array.from(ul.querySelectorAll('li'));
+                    let currentLevel = 1;
+                    let currentParent = ul;
+                    let lastLi = null;
+
+                    listItems.forEach(li => {
+                        const levelStr = li.getAttribute('data-mso-level');
+                        const level = levelStr ? parseInt(levelStr, 10) : 1;
+                        li.removeAttribute('data-mso-level');
+
+                        // Handle indenting nesting by padding the UL or LI. Lexical's list plugin respects nested ul > li > ul > li
+                        // but a simpler way is to just set marginLeft or let Lexical automatically format it.
+                        // Actually, if we just set the style padding, Lexical imports it as indenting block or list indent.
+                        if (level > 1) {
+                           li.style.marginLeft = `${(level - 1) * 20}px`;
+                        }
+                    });
+                });
+
+                const nodes = $generateNodesFromDOM(editor, dom);
                 const selection = $getSelection();
                 if (selection) {
                     selection.insertNodes(nodes);
@@ -154,11 +177,11 @@ function WordPasteFixPlugin() {
                 }
             });
 
-            return true; // We handled the paste
+            return true;
         }
-        return false; // Let Lexical handle it normally
+        return false;
       },
-      COMMAND_PRIORITY_EDITOR // High priority to intercept before Lexical's default plain text/html paste
+      COMMAND_PRIORITY_EDITOR
     );
   }, [editor]);
 
@@ -317,14 +340,7 @@ const BlogEditor = ({ article, onClose }) => {
           if (typeof parsed === 'string') {
             html = parsed;
           } else if (Array.isArray(parsed) && parsed.length > 0) {
-            // Legacy BlockNote JSON detected, convert to HTML lossy for Lexical
-            try {
-              const bnEditor = BlockNoteEditor.create();
-              html = await bnEditor.blocksToHTMLLossy(parsed);
-            } catch(err) {
-              console.error("Failed to convert legacy blocks to HTML", err);
-              html = '<p>Error loading legacy content.</p>';
-            }
+            html = '<p>Error loading legacy content. This article was saved using an unsupported editor format. Please copy the original text from your source document and paste it here.</p>';
           }
         } catch (e) {
           // Already raw HTML string

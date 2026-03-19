@@ -23,7 +23,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'lexical-vendor': ['lexical', '@lexical/html', '@lexical/rich-text', '@lexical/list', '@lexical/link', '@lexical/utils', '@lexical/markdown', '@lexical/selection', '@lexical/table'],
           'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
-          'blocknote-vendor': ['@blocknote/core', '@blocknote/react', '@blocknote/mantine'],
+
           'recharts-vendor': ['recharts'],
           'three-vendor': ['three']
         }
