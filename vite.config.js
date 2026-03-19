@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'lexical-vendor': ['lexical', '@lexical/html', '@lexical/rich-text', '@lexical/list', '@lexical/link', '@lexical/utils', '@lexical/markdown', '@lexical/selection', '@lexical/table'],
+          'editorjs-vendor': ['@editorjs/editorjs', '@editorjs/header', '@editorjs/list', '@editorjs/image', 'editorjs-html', '@editorjs/paragraph', 'editorjs-text-alignment-blocktune'],
           'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
 
           'recharts-vendor': ['recharts'],

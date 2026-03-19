@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import edjsHTML from 'editorjs-html';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
@@ -34,10 +35,27 @@ const ArticleViewer = () => {
 
             try {
                 const parsed = JSON.parse(found.content);
-                if (typeof parsed === 'string') {
+
+                // Handle Editor.js JSON Format
+                if (parsed && typeof parsed === 'object' && parsed.blocks) {
+                    const edjsParser = edjsHTML({
+                        paragraph: (block) => {
+                             const align = block.tunes?.textAlignment?.alignment || 'left';
+                             return `<p style="text-align: ${align};">${block.data.text}</p>`;
+                        },
+                        header: (block) => {
+                             const align = block.tunes?.textAlignment?.alignment || 'left';
+                             return `<h${block.data.level} style="text-align: ${align};">${block.data.text}</h${block.data.level}>`;
+                        }
+                    });
+                    const parsedHtmlArray = edjsParser.parse(parsed);
+                    html = parsedHtmlArray.join('');
+                } else if (typeof parsed === 'string') {
+                    // Legacy Lexical HTML string or standard HTML
                     html = parsed;
                 } else if (Array.isArray(parsed) && parsed.length > 0) {
-                    html = '<p><em>Error: Legacy BlockNote format is no longer supported. Please open this article in the admin panel and re-save it to migrate it to Lexical HTML.</em></p>';
+                    // Legacy BlockNote format
+                    html = '<p><em>Error: Legacy BlockNote format is no longer supported. Please open this article in the admin panel and re-save it to migrate it.</em></p>';
                 }
             } catch (e) {
                 // It's probably already raw HTML
