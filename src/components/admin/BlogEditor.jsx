@@ -24,6 +24,7 @@ import { ImageNode, $createImageNode, $isImageNode } from './ImageNode';
 import { COMMAND_PRIORITY_EDITOR, createCommand } from 'lexical';
 import { $wrapNodeInElement } from '@lexical/utils';
 import { $isRootNode } from 'lexical';
+import { PASTE_COMMAND } from 'lexical';
 import {
   $getSelection,
   $isRangeSelection,
@@ -100,6 +101,64 @@ function ImagesPlugin() {
         return true;
       },
       COMMAND_PRIORITY_EDITOR,
+    );
+  }, [editor]);
+
+  return null;
+}
+
+
+// Plugin to fix MS Word paste formatting
+function WordPasteFixPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      PASTE_COMMAND,
+      (event) => {
+        const html = event.clipboardData?.getData("text/html");
+
+        // Detect Word HTML
+        if (html && (html.includes('urn:schemas-microsoft-com:office:office') || html.includes('mso-') || html.includes('MsoListParagraph'))) {
+            let cleanHtml = html;
+
+            // 1. Remove the fake bullet symbol spans
+            cleanHtml = cleanHtml.replace(/<span[^>]*style="[^"]*mso-list:Ignore[^"]*"[^>]*>.*?<\/span>/gis, '');
+
+            // 2. Convert Word list paragraphs to semantic list items
+            cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+            cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+
+            // 3. Wrap adjacent <li> tags with <ul> so it parses correctly
+            cleanHtml = cleanHtml.replace(/(<li>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
+
+            // 4. Strip out Word's problematic inline layout styles
+            cleanHtml = cleanHtml.replace(/line-height:[^;"]+;?/gi, '');
+            cleanHtml = cleanHtml.replace(/margin(?:-top|-bottom|-left|-right)?:[^;"]+;?/gi, '');
+            cleanHtml = cleanHtml.replace(/mso-[a-z0-9-]+:[^;"]+;?/gi, '');
+
+            // Clean up empty style attributes left behind
+            cleanHtml = cleanHtml.replace(/style=""/gi, '');
+
+            // Use Lexical's internal HTML parser to convert the cleaned HTML back to nodes
+            editor.update(() => {
+                const parser = new DOMParser();
+                const dom = parser.parseFromString(cleanHtml, 'text/html');
+                const nodes = $generateNodesFromDOM(editor, dom);
+
+                const selection = $getSelection();
+                if (selection) {
+                    selection.insertNodes(nodes);
+                } else {
+                    $getRoot().append(...nodes);
+                }
+            });
+
+            return true; // We handled the paste
+        }
+        return false; // Let Lexical handle it normally
+      },
+      COMMAND_PRIORITY_EDITOR // High priority to intercept before Lexical's default plain text/html paste
     );
   }, [editor]);
 
@@ -316,9 +375,16 @@ const BlogEditor = ({ article, onClose }) => {
         }
     }
 
+    let finalSlug = slug || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    if (!article && !slug) {
+        // If it's a new article and the user didn't explicitly provide a custom slug, append a random string to ensure uniqueness
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        finalSlug = `${finalSlug}-${randomStr}`;
+    }
+
     const articleData = {
         title,
-        slug: slug || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+        slug: finalSlug,
         category,
         excerpt,
         cover_image: coverImageUrl,
@@ -443,6 +509,7 @@ const BlogEditor = ({ article, onClose }) => {
                           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
                           <InitialHtmlPlugin initialHtml={contentHtml} />
                           <OnChangeHtmlPlugin onChange={setContentHtml} />
+                          <WordPasteFixPlugin />
                           <ImagesPlugin />
                         </div>
                       </LexicalComposer>
