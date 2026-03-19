@@ -110,7 +110,7 @@ const ArticleViewer = () => {
              )}
 
              {/* BlockNote Renderer (Read-Only) */}
-             <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'} ck-content`} dangerouslySetInnerHTML={{ __html: contentHtml }} />
+             <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'} `} dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
 

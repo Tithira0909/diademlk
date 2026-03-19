@@ -1,27 +1,110 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from '../../context/DataContext';
-import { Save, X, Image as ImageIcon } from 'lucide-react';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import {
-    ClassicEditor,
-    Essentials,
-    Bold,
-    Italic,
-    Font,
-    Paragraph,
-    Alignment,
-    List,
-    Image,
-    ImageCaption,
-    ImageStyle,
-    ImageToolbar,
-    ImageUpload,
-    Heading,
-    Link,
-    PasteFromOffice
-} from 'ckeditor5';
+import { Save, X, Image as ImageIcon, Bold, Italic, Strikethrough, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, Link as LinkIcon, Undo, Redo } from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import TextAlign from '@tiptap/extension-text-align';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 
-import 'ckeditor5/ckeditor5.css';
+const MenuBar = ({ editor, uploadFile }) => {
+    if (!editor) {
+        return null;
+    }
+
+    const addImage = async () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const res = await uploadFile(file);
+                    editor.chain().focus().setImage({ src: res.url }).run();
+                } catch (err) {
+                    console.error("Image upload failed", err);
+                    alert("Failed to upload image.");
+                }
+            }
+        };
+        fileInput.click();
+    };
+
+    const setLink = useCallback(() => {
+        const previousUrl = editor.getAttributes('link').href;
+        const url = window.prompt('URL', previousUrl);
+
+        if (url === null) {
+            return;
+        }
+        if (url === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+            return;
+        }
+
+        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    }, [editor]);
+
+    const activeClass = "bg-blue-100 text-blue-600";
+    const baseClass = "p-2 rounded hover:bg-gray-100 text-gray-600 transition-colors";
+
+    return (
+        <div className="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border-b border-gray-100 rounded-t-2xl">
+            <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} disabled={!editor.can().chain().focus().toggleBold().run()} className={`${baseClass} ${editor.isActive('bold') ? activeClass : ''}`} title="Bold">
+                <Bold size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} disabled={!editor.can().chain().focus().toggleItalic().run()} className={`${baseClass} ${editor.isActive('italic') ? activeClass : ''}`} title="Italic">
+                <Italic size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} disabled={!editor.can().chain().focus().toggleStrike().run()} className={`${baseClass} ${editor.isActive('strike') ? activeClass : ''}`} title="Strikethrough">
+                <Strikethrough size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`${baseClass} ${editor.isActive({ textAlign: 'left' }) ? activeClass : ''}`} title="Align Left">
+                <AlignLeft size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`${baseClass} ${editor.isActive({ textAlign: 'center' }) ? activeClass : ''}`} title="Align Center">
+                <AlignCenter size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`${baseClass} ${editor.isActive({ textAlign: 'right' }) ? activeClass : ''}`} title="Align Right">
+                <AlignRight size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`${baseClass} ${editor.isActive({ textAlign: 'justify' }) ? activeClass : ''}`} title="Justify">
+                <AlignJustify size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+
+            <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`${baseClass} ${editor.isActive('bulletList') ? activeClass : ''}`} title="Bullet List">
+                <List size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`${baseClass} ${editor.isActive('orderedList') ? activeClass : ''}`} title="Numbered List">
+                <ListOrdered size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+
+            <button type="button" onClick={setLink} className={`${baseClass} ${editor.isActive('link') ? activeClass : ''}`} title="Link">
+                <LinkIcon size={18} />
+            </button>
+            <button type="button" onClick={addImage} className={baseClass} title="Image">
+                <ImageIcon size={18} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-300 mx-2" />
+
+            <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().chain().focus().undo().run()} className={baseClass} title="Undo">
+                <Undo size={18} />
+            </button>
+            <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().chain().focus().redo().run()} className={baseClass} title="Redo">
+                <Redo size={18} />
+            </button>
+        </div>
+    );
+};
 
 const BlogEditor = ({ article, onClose }) => {
   const { addArticle, updateArticle, uploadFile } = useData();
@@ -35,75 +118,78 @@ const BlogEditor = ({ article, onClose }) => {
   const [coverImagePreview, setCoverImagePreview] = useState(article?.cover_image || null);
 
   // Content State
-  // CKEditor uses raw HTML strings
   let initialHtml = '';
   if (article?.content) {
     try {
-      // Try to parse it just in case it's a JSON string from BlockNote
       const parsed = JSON.parse(article.content);
-      // If it parsed without error but we need HTML, we might need a converter.
-      // But if it's already HTML stored as a stringified string, let's extract it.
       if (typeof parsed === 'string') {
         initialHtml = parsed;
-      } else {
-        // We'll leave it empty or stringify the object if it was BlockNote JSON format
-        // Ideally the user doesn't care about old BlockNote posts, but let's try to stringify
-        initialHtml = JSON.stringify(parsed);
       }
     } catch (e) {
-      // It's probably raw HTML
       initialHtml = article.content;
     }
   }
 
-  const [content, setContent] = useState(initialHtml);
+  // Initialize Tiptap Editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Image,
+      Link.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: initialHtml,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[400px] p-4 max-w-none',
+      },
+      transformPastedHTML(html) {
+          // MS Word HTML cleanup logic hook
+          // This ensures that when the user pastes from Word, we strip problematic layouts and convert fake lists to real ul/li before Tiptap parses it
+          if (!html) return html;
+          if (html.includes('urn:schemas-microsoft-com:office:office') || html.includes('mso-') || html.includes('MsoListParagraph')) {
+              let cleanHtml = html;
 
-  // Custom Upload Adapter for CKEditor
-  function MyCustomUploadAdapterPlugin(editor) {
-      editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-          return {
-              upload: () => {
-                  return loader.file.then(file => {
-                      return uploadFile(file).then(res => {
-                          return {
-                              default: res.url
-                          };
-                      }).catch(err => {
-                          console.error("Upload failed", err);
-                          throw err;
-                      });
-                  });
-              }
-          };
-      };
-  }
+              // 1. Remove the fake bullet symbol spans
+              cleanHtml = cleanHtml.replace(/<span[^>]*style="[^"]*mso-list:Ignore[^"]*"[^>]*>.*?<\/span>/gis, '');
 
-  const editorConfig = {
-      licenseKey: 'GPL',
-      plugins: [
-          Essentials, Bold, Italic, Font, Paragraph, Alignment, List,
-          Image, ImageCaption, ImageStyle, ImageToolbar, ImageUpload,
-          Heading, Link, PasteFromOffice, MyCustomUploadAdapterPlugin
-      ],
-      toolbar: [
-          'heading', '|',
-          'bold', 'italic', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
-          'alignment:left', 'alignment:center', 'alignment:right', 'alignment:justify', '|',
-          'bulletedList', 'numberedList', '|',
-          'link', 'uploadImage', '|',
-          'undo', 'redo'
-      ],
-      image: {
-          toolbar: [
-              'imageTextAlternative', 'toggleImageCaption', 'imageStyle:inline',
-              'imageStyle:block', 'imageStyle:side'
-          ]
-      }
-  };
+              // 2. Convert Word list paragraphs to semantic list items
+              cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+              cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+
+              // 3. Wrap adjacent <li> tags with <ul> so it parses correctly
+              cleanHtml = cleanHtml.replace(/(<li>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
+
+              // 4. Strip out Word's problematic inline layout styles
+              cleanHtml = cleanHtml.replace(/line-height:[^;"]+;?/gi, '');
+              cleanHtml = cleanHtml.replace(/margin(?:-top|-bottom|-left|-right)?:[^;"]+;?/gi, '');
+              cleanHtml = cleanHtml.replace(/mso-[a-z0-9-]+:[^;"]+;?/gi, '');
+
+              // Clean up empty style attributes left behind
+              cleanHtml = cleanHtml.replace(/style=""/gi, '');
+
+              return cleanHtml;
+          }
+          return html;
+      },
+    },
+  });
 
   // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!editor) {
+        alert("Editor has not loaded yet.");
+        return;
+    }
+
+    const content = editor.getHTML();
 
     // Upload Cover Image if changed
     let coverImageUrl = coverImagePreview;
@@ -225,20 +311,10 @@ const BlogEditor = ({ article, onClose }) => {
               </div>
 
               {/* Editor Section */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col ckeditor-wrapper">
-                  <div className="p-4 border-b border-gray-100 bg-gray-50">
-                      <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Content Editor</span>
-                  </div>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col tiptap-wrapper">
+                  <MenuBar editor={editor} uploadFile={uploadFile} />
                   <div className="flex-grow">
-                      <CKEditor
-                          editor={ClassicEditor}
-                          config={editorConfig}
-                          data={content}
-                          onChange={(event, editor) => {
-                              const data = editor.getData();
-                              setContent(data);
-                          }}
-                      />
+                      <EditorContent editor={editor} />
                   </div>
               </div>
 

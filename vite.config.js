@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ckeditor-vendor': ['ckeditor5', '@ckeditor/ckeditor5-react'],
+          'tiptap-vendor': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-text-align', '@tiptap/extension-image', '@tiptap/extension-link'],
           'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
           'recharts-vendor': ['recharts'],
           'three-vendor': ['three']
