@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'blocknote-vendor': ['@blocknote/core', '@blocknote/react', '@blocknote/mantine'],
+          'ckeditor-vendor': ['ckeditor5', '@ckeditor/ckeditor5-react'],
           'mantine-vendor': ['@mantine/core', '@mantine/hooks'],
           'recharts-vendor': ['recharts'],
           'three-vendor': ['three']

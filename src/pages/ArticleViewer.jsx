@@ -4,10 +4,10 @@ import { useData } from '../context/DataContext';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import { BlockNoteView } from "@blocknote/mantine";
-import { useCreateBlockNote } from "@blocknote/react";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
+
+
+
+
 
 const ArticleViewer = () => {
   const { id } = useParams(); // 'id' will be the SLUG
@@ -17,8 +17,8 @@ const ArticleViewer = () => {
   const [isDark, setIsDark] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Initialize Read-Only Editor
-  const editor = useCreateBlockNote();
+  // Parse HTML content (handle legacy BlockNote format)
+  const [contentHtml, setContentHtml] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -29,29 +29,26 @@ const ArticleViewer = () => {
         const found = articles.find(a => a.slug === id);
         if (found) {
             setArticle(found);
-            try {
-                // If content is stored as JSON string, parse it
-                const content = typeof found.content === 'string'
-                    ? JSON.parse(found.content)
-                    : found.content;
 
-                if (content && Array.isArray(content) && content.length > 0) {
-                     // We need to replace blocks. Since useCreateBlockNote creates an empty doc,
-                     // we replace it with our content.
-                     if(editor) {
-                        editor.replaceBlocks(editor.document, content);
-                     }
+            let html = found.content || '';
+            try {
+                const parsed = JSON.parse(found.content);
+                if (typeof parsed === 'string') {
+                    html = parsed;
+                } else if (Array.isArray(parsed)) {
+                    html = '<p><em>Legacy BlockNote format detected. Please edit and re-save this article in the admin panel to migrate it to HTML.</em></p>';
                 }
             } catch (e) {
-                console.error("Failed to parse article content for viewer:", e);
+                // It's probably already raw HTML
             }
+            setContentHtml(html);
         }
         setLoading(false);
     } else if (!contextLoading && articles.length === 0) {
         // Articles array empty but finished loading
         setLoading(false);
     }
-  }, [id, articles, contextLoading, editor]);
+  }, [id, articles, contextLoading]);
 
   if (loading || contextLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
@@ -113,9 +110,7 @@ const ArticleViewer = () => {
              )}
 
              {/* BlockNote Renderer (Read-Only) */}
-             <div className={`blocknote-content ${isDark ? 'dark-mode-blocks' : ''}`}>
-                 <BlockNoteView editor={editor} editable={false} theme={isDark ? "dark" : "light"} />
-             </div>
+             <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'} ck-content`} dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
 
