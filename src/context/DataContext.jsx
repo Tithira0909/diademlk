@@ -12,6 +12,7 @@ export const DataProvider = ({ children }) => {
   const [banners, setBanners] = useState([]);
   const [siteViews, setSiteViews] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
+  const [settings, setSettings] = useState({ default_theme: 'light' });
   const [loading, setLoading] = useState(true);
 
   // API Base URL
@@ -49,6 +50,12 @@ export const DataProvider = ({ children }) => {
             if (viewsRes.ok) {
                 const data = await viewsRes.json();
                 setSiteViews(data.views);
+            }
+
+            const settingsRes = await fetch(`${API_URL}/settings`);
+            if (settingsRes.ok) {
+                const data = await settingsRes.json();
+                setSettings(data);
             }
 
             // Protected Data
@@ -236,6 +243,25 @@ export const DataProvider = ({ children }) => {
       }
   };
 
+  const updateSettings = async (newSettings) => {
+      try {
+          const res = await fetch(`${API_URL}/settings`, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify(newSettings)
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setSettings(prev => ({ ...prev, ...data }));
+              return true;
+          }
+          return false;
+      } catch (error) {
+          console.error("Error updating settings:", error);
+          return false;
+      }
+  };
+
   // Auth
   const login = async (username, password) => {
     try {
@@ -283,6 +309,8 @@ export const DataProvider = ({ children }) => {
       deleteBanner,
       uploadFile,
       incrementViews,
+      updateSettings,
+      settings,
       login,
       logout
     }}>

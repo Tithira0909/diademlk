@@ -12,3 +12,69 @@
 .ql-font-montserrat {
   font-family: 'Montserrat', sans-serif;
 }
+
+/* Prose Responsiveness */
+.prose {
+  overflow-wrap: break-word; /* Prevents horizontal scroll for very long words/URLs */
+  word-wrap: break-word;
+  word-break: normal; /* STRICT: Never break words mid-string unless line is too narrow for one word */
+  white-space: pre-wrap; /* STRICT: Respects line breaks and spaces from the editor */
+  text-align: left; /* STRICT: Reverting to left align to respect the editor's formatting exactly */
+  max-width: 100%;
+  hyphens: none !important; /* STRICT: No hyphenation allowed */
+  -webkit-hyphens: none !important;
+  -ms-hyphens: none !important;
+}
+
+/* Generic utility to force wrapping */
+.force-wrap {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: normal;
+  white-space: pre-wrap; /* Respects formatting */
+  text-align: left;
+  max-width: 100%;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  -ms-hyphens: none !important;
+}
+
+.force-wrap * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none !important;
+  white-space: pre-wrap;
+}
+
+/* Ensure no elements inside prose exceed width */
+.prose * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none !important;
+}
+
+/* Images and Videos */
+.prose img, .prose video {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  display: block;
+  margin: 1rem auto;
+}
+
+.prose iframe {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 0.5rem;
+}
+
+/* Fix for pre tags if they exist - explicit pre-wrap */
+.prose pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  text-align: left; /* Code blocks should stay left-aligned */
+}

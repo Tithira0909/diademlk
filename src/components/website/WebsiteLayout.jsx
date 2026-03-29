@@ -11,15 +11,24 @@ import BlogSection from './BlogSection'; // Needs to be the one in this folder
 import Footer from './Footer';
 
 const WebsiteLayout = () => {
-  const { incrementViews } = useData();
+  const { incrementViews, settings, banners, loading } = useData();
   const [activeTab, setActiveTab] = useState('home');
   const [isDark, setIsDark] = useState(false);
+  const [themeInitialized, setThemeInitialized] = useState(false);
 
   useScrollReveal();
 
   useEffect(() => {
     incrementViews();
   }, []);
+
+  // Sync with default theme from settings on load
+  useEffect(() => {
+    if (!loading && settings && !themeInitialized) {
+        setIsDark(settings.default_theme === 'dark');
+        setThemeInitialized(true);
+    }
+  }, [loading, settings, themeInitialized]);
 
   const toggleTheme = () => setIsDark(!isDark);
 
@@ -31,6 +40,7 @@ const WebsiteLayout = () => {
         setActiveTab={setActiveTab}
         isDark={isDark}
         toggleTheme={toggleTheme}
+        hasHeroBanners={banners && banners.length > 0}
       />
 
       <Hero isDark={isDark} />
