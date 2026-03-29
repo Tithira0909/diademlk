@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import edjsHTML from 'editorjs-html';
 import { ArrowLeft, Facebook, Instagram, Linkedin, Youtube, Video } from 'lucide-react';
 import Navbar from '../components/website/Navbar';
 import Footer from '../components/website/Footer';
-import { BlockNoteView } from "@blocknote/mantine";
-import { useCreateBlockNote } from "@blocknote/react";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
+
+
+
+
 
 const ArticleViewer = () => {
   const { id } = useParams(); // 'id' will be the SLUG
@@ -17,8 +18,8 @@ const ArticleViewer = () => {
   const [isDark, setIsDark] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Initialize Read-Only Editor
-  const editor = useCreateBlockNote();
+  // Content state variables
+  const [contentHtml, setContentHtml] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -29,29 +30,45 @@ const ArticleViewer = () => {
         const found = articles.find(a => a.slug === id);
         if (found) {
             setArticle(found);
-            try {
-                // If content is stored as JSON string, parse it
-                const content = typeof found.content === 'string'
-                    ? JSON.parse(found.content)
-                    : found.content;
 
-                if (content && Array.isArray(content) && content.length > 0) {
-                     // We need to replace blocks. Since useCreateBlockNote creates an empty doc,
-                     // we replace it with our content.
-                     if(editor) {
-                        editor.replaceBlocks(editor.document, content);
-                     }
+            let html = found.content || '';
+
+            try {
+                const parsed = JSON.parse(found.content);
+
+                // Handle Editor.js JSON Format
+                if (parsed && typeof parsed === 'object' && parsed.blocks) {
+                    const edjsParser = edjsHTML({
+                        paragraph: (block) => {
+                             const align = block.tunes?.textAlignment?.alignment || 'left';
+                             return `<p style="text-align: ${align};">${block.data.text}</p>`;
+                        },
+                        header: (block) => {
+                             const align = block.tunes?.textAlignment?.alignment || 'left';
+                             return `<h${block.data.level} style="text-align: ${align};">${block.data.text}</h${block.data.level}>`;
+                        }
+                    });
+                    const parsedHtmlArray = edjsParser.parse(parsed);
+                    html = parsedHtmlArray.join('');
+                } else if (typeof parsed === 'string') {
+                    // Legacy Lexical HTML string or standard HTML
+                    html = parsed;
+                } else if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Legacy BlockNote format
+                    html = '<p><em>Error: Legacy BlockNote format is no longer supported. Please open this article in the admin panel and re-save it to migrate it.</em></p>';
                 }
             } catch (e) {
-                console.error("Failed to parse article content for viewer:", e);
+                // It's probably already raw HTML
             }
+
+            setContentHtml(html);
         }
         setLoading(false);
     } else if (!contextLoading && articles.length === 0) {
         // Articles array empty but finished loading
         setLoading(false);
     }
-  }, [id, articles, contextLoading, editor]);
+  }, [id, articles, contextLoading]);
 
   if (loading || contextLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!article) return <div className="min-h-screen flex items-center justify-center">Article not found.</div>;
@@ -113,9 +130,7 @@ const ArticleViewer = () => {
              )}
 
              {/* BlockNote Renderer (Read-Only) */}
-             <div className={`blocknote-content ${isDark ? 'dark-mode-blocks' : ''}`}>
-                 <BlockNoteView editor={editor} editable={false} theme={isDark ? "dark" : "light"} />
-             </div>
+             <div className={`prose prose-lg max-w-none prose-blue ${isDark ? 'dark:prose-invert text-gray-300' : 'text-gray-800'}`} dangerouslySetInnerHTML={{ __html: contentHtml }} />
         </div>
       </div>
 

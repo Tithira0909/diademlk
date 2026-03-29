@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useData } from '../../context/DataContext';
 import { Save, X, Image as ImageIcon } from 'lucide-react';
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
+import EditorJS from '@editorjs/editorjs';
+import Header from '@editorjs/header';
+import List from '@editorjs/list';
+import ImageTool from '@editorjs/image';
+import TextAlignmentTune from 'editorjs-text-alignment-blocktune';
+import Paragraph from '@editorjs/paragraph';
 
 const BlogEditor = ({ article, onClose }) => {
   const { addArticle, updateArticle, uploadFile } = useData();
@@ -17,29 +19,194 @@ const BlogEditor = ({ article, onClose }) => {
   const [coverImage, setCoverImage] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(article?.cover_image || null);
 
-  // Initialize BlockNote editor
-  // We use the article.content as initial content if it exists
-  const initialContent = article?.content ? JSON.parse(article.content) : undefined;
+  // Editor State
+  const editorRef = useRef(null);
 
-  const editor = useCreateBlockNote({
-    initialContent: initialContent,
-    uploadFile: async (file) => {
-       try {
-           const result = await uploadFile(file);
-           return result.url;
-       } catch(e) {
-           console.error("Image upload failed", e);
-           return "https://via.placeholder.com/150"; // Fallback
-       }
+  useEffect(() => {
+    let initialData = { time: new Date().getTime(), blocks: [] };
+
+    if (article?.content) {
+      try {
+         const parsed = JSON.parse(article.content);
+         if (parsed && typeof parsed === 'object' && parsed.blocks) {
+             initialData = parsed;
+         } else if (typeof parsed === 'string') {
+             // Handle legacy HTML by throwing it into a single raw HTML block or paragraph
+             initialData.blocks.push({
+                 type: 'paragraph',
+                 data: { text: parsed }
+             });
+         }
+      } catch (e) {
+          // Assume raw HTML string
+          initialData.blocks.push({
+             type: 'paragraph',
+             data: { text: article.content }
+          });
+      }
     }
-  });
+
+    if (!editorRef.current) {
+      const editor = new EditorJS({
+        holder: 'editorjs-container',
+        data: initialData,
+        autofocus: true,
+        tools: {
+          textAlignment: {
+            class: TextAlignmentTune,
+          },
+          paragraph: {
+             class: Paragraph,
+             inlineToolbar: true,
+             tunes: ['textAlignment'],
+          },
+          header: {
+            class: Header,
+            inlineToolbar: true,
+            tunes: ['textAlignment'],
+          },
+          list: {
+            class: List,
+            inlineToolbar: true,
+          },
+          image: {
+            class: ImageTool,
+            config: {
+              uploader: {
+                uploadByFile: async (file) => {
+                  try {
+                    const res = await uploadFile(file);
+                    return {
+                      success: 1,
+                      file: {
+                        url: res.url
+                      }
+                    };
+                  } catch (e) {
+                    console.error("Upload Error", e);
+                    return { success: 0 };
+                  }
+                }
+              }
+            }
+          }
+        },
+        tunes: ['textAlignment'],
+        onReady: () => {
+           // To perfectly handle MS Word paste which is requested by the user, Editor.js natively tries to handle lists and paragraphs.
+           // However, Word's MSO properties often break lists on mobile by adding excessive styles or rendering lists as dots.
+           // Since EditorJS converts raw pasted HTML into blocks, we can intercept the paste event globally on the container
+           // and sanitize the clipboard data *before* EditorJS parses it into blocks.
+
+           const container = document.getElementById('editorjs-container');
+           if (container) {
+               container.addEventListener('paste', (e) => {
+                   const html = e.clipboardData?.getData("text/html");
+                   if (html && (html.includes('urn:schemas-microsoft-com:office:office') || html.includes('mso-') || html.includes('MsoListParagraph'))) {
+                       e.preventDefault();
+                       e.stopPropagation();
+
+                       let cleanHtml = html;
+
+                       // 1. Remove the fake bullet symbol spans
+                       cleanHtml = cleanHtml.replace(/<span[^>]*style="[^"]*mso-list:Ignore[^"]*"[^>]*>.*?<\/span>/gis, '');
+
+                       // 2. Identify list paragraphs and convert them to <li>.
+                       cleanHtml = cleanHtml.replace(/<p[^>]*class="[^"]*MsoListParagraph[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+                       cleanHtml = cleanHtml.replace(/<p[^>]*style="[^"]*mso-list:[^"]*"[^>]*>(.*?)<\/p>/gis, '<li>$1</li>');
+
+                       // 3. Wrap adjacent <li> tags with <ul>
+                       cleanHtml = cleanHtml.replace(/(<li>.*?<\/li>\s*)+/gis, match => `<ul>${match}</ul>`);
+
+                       // 4. Clean out problematic Word styles to fix the "huge line spacing"
+                       cleanHtml = cleanHtml.replace(/line-height:[^;"]+;?/gi, '');
+                       cleanHtml = cleanHtml.replace(/margin(?:-top|-bottom|-left|-right)?:[^;"]+;?/gi, '');
+                       cleanHtml = cleanHtml.replace(/mso-[a-z0-9-]+:[^;"]+;?/gi, '');
+                       cleanHtml = cleanHtml.replace(/style=""/gi, '');
+
+                       // Push the cleaned HTML back into the clipboard event manually
+                       // Unfortunately, we can't easily modify the clipboard data and re-dispatch.
+                       // Instead, we can use EditorJS's blocks API to insert the raw HTML directly, which EditorJS parses using its paste configuration.
+
+                       // To prevent overwriting the whole document, we must convert the clean HTML into blocks
+                       // and insert them sequentially after the current block.
+                       const parser = new DOMParser();
+                       const doc = parser.parseFromString(cleanHtml, 'text/html');
+                       const newBlocks = [];
+
+                       Array.from(doc.body.childNodes).forEach(node => {
+                           if (node.nodeName === 'P') {
+                               newBlocks.push({
+                                   type: 'paragraph',
+                                   data: { text: node.innerHTML }
+                               });
+                           } else if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+                               const items = Array.from(node.querySelectorAll('li')).map(li => li.innerHTML);
+                               if (items.length > 0) {
+                                   newBlocks.push({
+                                       type: 'list',
+                                       data: {
+                                           style: node.nodeName === 'UL' ? 'unordered' : 'ordered',
+                                           items: items
+                                       }
+                                   });
+                               }
+                           } else if (node.nodeName.match(/^H[1-6]$/)) {
+                               newBlocks.push({
+                                   type: 'header',
+                                   data: {
+                                       text: node.innerHTML,
+                                       level: parseInt(node.nodeName.replace('H', ''), 10)
+                                   }
+                               });
+                           } else if (node.nodeType === 3 && node.textContent.trim().length > 0) {
+                               newBlocks.push({
+                                   type: 'paragraph',
+                                   data: { text: node.textContent.trim() }
+                               });
+                           }
+                       });
+
+                       const currentIndex = editor.blocks.getCurrentBlockIndex();
+                       const insertIndex = currentIndex >= 0 ? currentIndex + 1 : editor.blocks.getBlocksCount();
+
+                       if (newBlocks.length > 0) {
+                           editor.blocks.insertMany(newBlocks, insertIndex);
+                       }
+                   }
+               }, true);
+           }
+        }
+      });
+      editorRef.current = editor;
+    }
+
+    return () => {
+      if (editorRef.current) {
+        const editor = editorRef.current;
+        editorRef.current = null;
+        editor.isReady
+          .then(() => {
+            editor.destroy();
+          })
+          .catch(e => console.error('EditorJS cleanup error', e));
+      }
+    };
+  }, [article, uploadFile]);
 
   // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Get content from BlockNote
-    const content = JSON.stringify(editor.document);
+    if (!editorRef.current) return;
+
+    let contentData;
+    try {
+        contentData = await editorRef.current.save();
+    } catch (e) {
+        console.error('EditorJS save failed', e);
+        return;
+    }
 
     // Upload Cover Image if changed
     let coverImageUrl = coverImagePreview;
@@ -47,19 +214,26 @@ const BlogEditor = ({ article, onClose }) => {
         try {
             const uploadRes = await uploadFile(coverImage);
             coverImageUrl = uploadRes.url;
-        } catch (e) {
-             console.error("Cover image upload failed", e);
+        } catch (err) {
+             console.error("Cover image upload failed", err);
              alert("Cover image upload failed. Saving without new image.");
         }
     }
 
+    let finalSlug = slug || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    if (!article && !slug) {
+        // If it's a new article and the user didn't explicitly provide a custom slug, append a random string to ensure uniqueness
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        finalSlug = `${finalSlug}-${randomStr}`;
+    }
+
     const articleData = {
         title,
-        slug: slug || title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+        slug: finalSlug,
         category,
         excerpt,
         cover_image: coverImageUrl,
-        content: content,
+        content: JSON.stringify(contentData),
         published_at: article ? article.published_at : new Date().toISOString()
     };
 
@@ -161,13 +335,11 @@ const BlogEditor = ({ article, onClose }) => {
               </div>
 
               {/* Editor Section */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[500px] flex flex-col">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col relative min-h-[400px]">
                   <div className="p-4 border-b border-gray-100 bg-gray-50">
                       <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Content Editor</span>
                   </div>
-                  <div className="p-4 flex-grow">
-                     <BlockNoteView editor={editor} theme={"light"} />
-                  </div>
+                  <div id="editorjs-container" className="flex-grow p-4 prose prose-blue max-w-none focus:outline-none"></div>
               </div>
 
               {/* Action Buttons */}
