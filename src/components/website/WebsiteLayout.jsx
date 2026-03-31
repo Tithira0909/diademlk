@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useData } from '../../context/DataContext';
 import GlobalStyles from '../GlobalStyles';
 import useScrollReveal from '../../hooks/useScrollReveal';
 import Navbar from './Navbar';
 import Hero from './Hero';
-import StatsStrip from './StatsStrip';
 import VisionMission from './VisionMission';
 import Services from './Services';
 import FeaturePreview from './FeaturePreview';
@@ -11,10 +11,15 @@ import BlogSection from './BlogSection'; // Needs to be the one in this folder
 import Footer from './Footer';
 
 const WebsiteLayout = () => {
+  const { incrementViews } = useData();
   const [activeTab, setActiveTab] = useState('home');
   const [isDark, setIsDark] = useState(false);
 
   useScrollReveal();
+
+  useEffect(() => {
+    incrementViews();
+  }, []);
 
   const toggleTheme = () => setIsDark(!isDark);
 
@@ -29,7 +34,6 @@ const WebsiteLayout = () => {
       />
 
       <Hero isDark={isDark} />
-      <StatsStrip isDark={isDark} />
       <VisionMission isDark={isDark} />
       <Services isDark={isDark} />
 

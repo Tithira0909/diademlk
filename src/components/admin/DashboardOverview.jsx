@@ -19,13 +19,13 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 );
 
 const DashboardOverview = () => {
-  const { articles, inquiries, users } = useData();
+  const { articles, inquiries, users, siteViews } = useData();
 
   const stats = [
     { title: 'Total Articles', value: articles.length, icon: FileText, color: 'bg-blue-500' },
     { title: 'Inquiries', value: inquiries.length, icon: MessageSquare, color: 'bg-green-500' },
     { title: 'Total Users', value: users.length, icon: Users, color: 'bg-purple-500' },
-    { title: 'Views', value: '12.5k', icon: TrendingUp, color: 'bg-orange-500' },
+    { title: 'Views', value: siteViews || 0, icon: TrendingUp, color: 'bg-orange-500' },
   ];
 
   // Prepare chart data

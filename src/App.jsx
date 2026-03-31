@@ -7,6 +7,7 @@ import ArticleViewer from './pages/ArticleViewer';
 import AdminLogin from './pages/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
 import DashboardOverview from './components/admin/DashboardOverview';
+import BannerManager from './components/admin/BannerManager';
 import BlogManager from './components/admin/BlogManager';
 import InquiryManager from './components/admin/InquiryManager';
 import UserManagement from './components/admin/UserManagement';
@@ -25,6 +26,7 @@ const App = () => {
           <Route path="/admin" element={<AdminLayout />}>
              <Route index element={<Navigate to="dashboard" replace />} />
              <Route path="dashboard" element={<DashboardOverview />} />
+             <Route path="banners" element={<BannerManager />} />
              <Route path="blogs" element={<BlogManager />} />
              <Route path="inquiries" element={<InquiryManager />} />
              <Route path="users" element={<UserManagement />} />

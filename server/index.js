@@ -189,6 +189,63 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// --- Banners ---
+app.get('/api/banners', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM banners WHERE active = TRUE ORDER BY list_order ASC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.post('/api/banners', authenticateToken, async (req, res) => {
+    const { title, imageUrl, link, active, list_order } = req.body;
+    try {
+        const [result] = await db.query(
+            'INSERT INTO banners (title, imageUrl, link, active, list_order) VALUES (?, ?, ?, ?, ?)',
+            [title, imageUrl, link, active !== undefined ? active : true, list_order || 0]
+        );
+        res.status(201).json({ id: result.insertId, ...req.body });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.delete('/api/banners/:id', authenticateToken, async (req, res) => {
+    try {
+        await db.query('DELETE FROM banners WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Banner deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// --- Site Views ---
+app.get('/api/views', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT views FROM site_stats WHERE id = 1');
+        res.json({ views: rows[0]?.views || 0 });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.post('/api/views/increment', async (req, res) => {
+    try {
+        await db.query('UPDATE site_stats SET views = views + 1 WHERE id = 1');
+        res.json({ message: 'View counted' });
+    } catch (error) {
+         // Fail silently or create row if missing
+         try {
+             await db.query('INSERT INTO site_stats (id, views) VALUES (1, 1) ON DUPLICATE KEY UPDATE views = views + 1');
+             res.json({ message: 'View counted' });
+         } catch(e) {
+             res.status(500).json({ message: e.message });
+         }
+    }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

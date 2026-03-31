@@ -16,7 +16,6 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
 
   const navLinks = [
     { id: 'home', label: 'Home' },
-    { id: 'vision', label: 'Vision' },
     { id: 'courses', label: 'Academy' },
     { id: 'trade', label: 'Trade' },
     { id: 'blogs', label: 'Insights' },

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, FileText, MessageSquare, Users,
+  LayoutDashboard, FileText, MessageSquare, Users, Image,
   Settings, LogOut, Sun, Moon
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
@@ -17,6 +17,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+    { icon: Image, label: 'Hero Banners', path: '/admin/banners' },
     { icon: FileText, label: 'Blogs & Articles', path: '/admin/blogs' },
     { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries' },
     { icon: Users, label: 'User Management', path: '/admin/users' },
