@@ -23,15 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Ignore everything in the root directory
-*
-
-# EXCEPT for the .gitignore file itself, which Git needs
-!.gitignore
-
-# EXCEPT for the dist folder
-!dist/
-
-# Optionally, also ignore node_modules and npm debug logs for safety
-node_modules/
-npm-debug.log
+# Server
+server/node_modules
+server/.env
