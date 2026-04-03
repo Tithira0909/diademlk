@@ -78,31 +78,12 @@ const ArticleViewer = () => {
 
             {/* Social Links */}
             <div className="flex items-center gap-4 mb-6">
-                {settings?.facebook_url && (
-                    <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:scale-110 transition-transform">
-                        <Facebook size={24} />
-                    </a>
-                )}
-                {settings?.instagram_url && (
-                    <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:scale-110 transition-transform">
-                        <Instagram size={24} />
-                    </a>
-                )}
-                {settings?.linkedin_url && (
-                    <a href={settings.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:scale-110 transition-transform">
-                        <Linkedin size={24} />
-                    </a>
-                )}
-                {settings?.tiktok_url && (
-                    <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer" className={`hover:scale-110 transition-transform ${isDark ? 'text-white' : 'text-black'}`}>
-                        <Video size={24} />
-                    </a>
-                )}
-                {settings?.youtube_url && (
-                    <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:scale-110 transition-transform">
-                        <Youtube size={24} />
-                    </a>
-                )}
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:scale-110 transition-transform">
+                    <Facebook size={24} />
+                </a>
+                <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:scale-110 transition-transform">
+                    <Linkedin size={24} />
+                </a>
             </div>
         </div>
 
