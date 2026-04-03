@@ -49,6 +49,7 @@ async function setup() {
         console.log(`Connected to '${dbName}'. Creating tables...`);
 
         // Users
+        // Need to alter the table to add missing columns since IF NOT EXISTS won't update it
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -58,6 +59,14 @@ async function setup() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE DEFAULT 'admin@diadem.com'`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(10)`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP`);
+        } catch (e) {
+            console.log("Columns may already exist, skipping alter");
+        }
 
         // Articles
         await client.query(`
@@ -128,9 +137,9 @@ async function setup() {
         // Admin User (password: 'password')
         // Use ON CONFLICT to avoid errors on re-run
         await client.query(`
-            INSERT INTO users (username, password, role)
-            VALUES ('admin', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
-            ON CONFLICT (username) DO NOTHING;
+            INSERT INTO users (username, email, password, role)
+            VALUES ('admin', 'admin@diadem.com', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
+            ON CONFLICT (username) DO UPDATE SET email = 'admin@diadem.com';
         `);
 
         await client.query(`
