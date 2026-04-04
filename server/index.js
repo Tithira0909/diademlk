@@ -183,7 +183,7 @@ app.post('/api/login', async (req, res) => {
 
           // 4. Send OTP via MailerSend
           try {
-              const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@dieademlk.com";
+              const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@diademlk.com";
               const sentFrom = new Sender(fromEmail, "Diadem Admin");
               const recipients = [new Recipient(user.email, user.username)];
 
