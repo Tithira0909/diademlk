@@ -54,6 +54,12 @@ db.query('SELECT 1')
           // Ignore unique constraint error if row exists
       }
       console.log('✅ Settings table verified.');
+
+      if (process.env.MAILERSEND_API_KEY && process.env.MAILERSEND_API_KEY !== 'dummy_key_for_dev') {
+          console.log('✅ MailerSend is active.');
+      } else {
+          console.log('⚠️  MailerSend is NOT active (OTP emails will be logged to console only).');
+      }
     } catch (err) {
       console.error('❌ Settings table init failed:', err.message);
     }
@@ -177,7 +183,8 @@ app.post('/api/login', async (req, res) => {
 
           // 4. Send OTP via MailerSend
           try {
-              const sentFrom = new Sender("noreply@diadem.com", "Diadem Admin");
+              const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@dieademlk.com";
+              const sentFrom = new Sender(fromEmail, "Diadem Admin");
               const recipients = [new Recipient(user.email, user.username)];
 
               const emailParams = new EmailParams()
