@@ -61,7 +61,7 @@ async function setup() {
         `);
 
         try {
-            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE DEFAULT 'admin@diadem.com'`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE DEFAULT 'admin@diademlk.com'`);
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(10)`);
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP`);
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)`);
@@ -144,8 +144,8 @@ async function setup() {
         // Use ON CONFLICT to avoid errors on re-run
         await client.query(`
             INSERT INTO users (username, email, password, role)
-            VALUES ('admin', 'admin@diadem.com', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
-            ON CONFLICT (username) DO UPDATE SET email = 'admin@diadem.com';
+            VALUES ('admin', 'admin@diademlk.com', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
+            ON CONFLICT (username) DO UPDATE SET email = 'admin@diademlk.com';
         `);
 
         await client.query(`
