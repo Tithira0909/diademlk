@@ -495,7 +495,47 @@ app.put('/api/settings', authenticateToken, async (req, res) => {
 });
 
 // Handle SPA routing
-app.get('*', (req, res) => {
+app.get('*', async (req, res) => {
+    // Inject OpenGraph Meta tags for articles
+    if (req.path.startsWith('/article/')) {
+        const slug = req.path.split('/')[2];
+        try {
+            const [rows] = await db.query('SELECT title, excerpt, cover_image FROM articles WHERE slug = ?', [slug]);
+            if (rows && rows.length > 0) {
+                const article = rows[0];
+                const indexFile = path.join(distPath, 'index.html');
+
+                fs.readFile(indexFile, 'utf8', (err, data) => {
+                    if (err) {
+                        console.error('Error reading index.html:', err);
+                        return res.sendFile(indexFile);
+                    }
+
+                    // Escape quotes for HTML attributes
+                    const escapeHtmlAttr = (str) => {
+                        if (!str) return '';
+                        return String(str).replace(/"/g, '&quot;').replace(/>/g, '&gt;').replace(/</g, '&lt;');
+                    };
+
+                    const metaTags = `
+                        <meta property="og:title" content="${escapeHtmlAttr(article.title) || 'DiademLK Article'}" />
+                        <meta property="og:description" content="${escapeHtmlAttr(article.excerpt) || 'Read the latest insights from DiademLK.'}" />
+                        <meta property="og:image" content="${escapeHtmlAttr(article.cover_image ? (article.cover_image.startsWith('http') ? article.cover_image : req.protocol + '://' + req.get('host') + article.cover_image) : req.protocol + '://' + req.get('host') + '/logo-black.png')}" />
+                        <meta property="og:url" content="${escapeHtmlAttr(req.protocol + '://' + req.get('host') + req.originalUrl)}" />
+                        <meta property="og:type" content="article" />
+                        <meta name="twitter:card" content="summary_large_image" />
+                    `;
+
+                    // Inject meta tags into the <head> of the document
+                    const result = data.replace('<head>', `<head>\n${metaTags}`);
+                    res.send(result);
+                });
+                return;
+            }
+        } catch (error) {
+            console.error('Error fetching article for meta tags:', error);
+        }
+    }
     res.sendFile(path.join(distPath, 'index.html'));
 });
 

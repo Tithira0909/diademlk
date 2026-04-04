@@ -84,6 +84,9 @@ const ArticleViewer = () => {
                 <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(title)}`} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:scale-110 transition-transform">
                     <Linkedin size={24} />
                 </a>
+                <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title + " - " + window.location.href)}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:scale-110 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M16 14.5c-.5-1-1.5-1.5-2.5-1.5h-1c-1 0-2 .5-2.5 1.5l-1 1c-1.5-1-2.5-2-3.5-3.5l1-1c1-.5 1.5-1.5 1.5-2.5v-1c0-1-.5-2-1.5-2.5l-1.5-1c-1 0-2 .5-2.5 1.5a4.4 4.4 0 0 0 .5 4.5c1.5 3.5 4.5 6.5 8 8a4.4 4.4 0 0 0 4.5.5c1-.5 1.5-1.5 1.5-2.5l-1-1.5z"/></svg>
+                </a>
             </div>
         </div>
 
