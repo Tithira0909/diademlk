@@ -17,12 +17,12 @@ const AdminLayout = () => {
   };
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: Image, label: 'Hero Banners', path: '/admin/banners' },
-    { icon: FileText, label: 'Blogs & Articles', path: '/admin/blogs' },
-    { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries' },
-    { icon: Users, label: 'User Management', path: '/admin/users' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard', roles: ['admin', 'editor'] },
+    { icon: Image, label: 'Hero Banners', path: '/admin/banners', roles: ['admin', 'editor'] },
+    { icon: FileText, label: 'Blogs & Articles', path: '/admin/blogs', roles: ['admin', 'editor'] },
+    { icon: MessageSquare, label: 'Inquiries', path: '/admin/inquiries', roles: ['admin', 'editor'] },
+    { icon: Users, label: 'User Management', path: '/admin/users', roles: ['admin'] },
+    { icon: Settings, label: 'Settings', path: '/admin/settings', roles: ['admin'] },
   ];
 
   // Auth Guard
@@ -77,7 +77,7 @@ const AdminLayout = () => {
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => (
+          {navItems.filter(item => item.roles.includes(currentUser.role)).map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -95,12 +95,16 @@ const AdminLayout = () => {
 
         <div className="p-4 border-t border-zinc-800">
            <div className="flex items-center gap-3 mb-4 px-4">
-               <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                   {currentUser.username[0].toUpperCase()}
-               </div>
+               {currentUser.image_url ? (
+                   <img src={currentUser.image_url} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-zinc-700" />
+               ) : (
+                   <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                       {currentUser.first_name ? currentUser.first_name[0].toUpperCase() : currentUser.username[0].toUpperCase()}
+                   </div>
+               )}
                <div>
-                   <p className="text-sm font-bold">{currentUser.username}</p>
-                   <p className="text-xs text-gray-500 capitalize">{currentUser.role}</p>
+                   <p className="text-sm font-bold">{currentUser.first_name || currentUser.username}</p>
+                   <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">{currentUser.role}</p>
                </div>
            </div>
           <button

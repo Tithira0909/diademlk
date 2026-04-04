@@ -55,7 +55,7 @@ async function setup() {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(255) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(50) DEFAULT 'client',
+                role VARCHAR(50) DEFAULT 'editor',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -64,8 +64,14 @@ async function setup() {
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE DEFAULT 'admin@diadem.com'`);
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(10)`);
             await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`);
+            // Change default role if it exists (for new rows)
+            await client.query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'editor'`);
+            // Update existing 'client' roles to 'editor'
+            await client.query(`UPDATE users SET role = 'editor' WHERE role = 'client'`);
         } catch (e) {
-            console.log("Columns may already exist, skipping alter");
+            console.log("Columns may already exist, skipping alter", e.message);
         }
 
         // Articles

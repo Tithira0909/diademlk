@@ -251,8 +251,22 @@ app.post('/api/login/verify-otp', async (req, res) => {
         // OTP is valid. Clear it and issue JWT token
         await db.query('UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE id = $1', [user.id]);
 
-        const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
-        res.json({ id: user.id, username: user.username, role: user.role, token });
+        const token = jwt.sign({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            first_name: user.first_name,
+            image_url: user.image_url
+        }, SECRET_KEY, { expiresIn: '1h' });
+
+        res.json({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            first_name: user.first_name,
+            image_url: user.image_url,
+            token
+        });
 
     } catch (error) {
         console.error("OTP Verification Error:", error);
@@ -333,6 +347,34 @@ app.post('/api/inquiries', async (req, res) => {
       [name, email, phone, message]
     );
     const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+
+    // Send email notification to info@diademlk.com
+    try {
+        const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@diademlk.com";
+        const sentFrom = new Sender(fromEmail, "Diadem Website");
+        const recipients = [new Recipient("info@diademlk.com", "Diadem Info")];
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(`New Inquiry from ${name}`)
+          .setHtml(`
+            <h3>New Inquiry Received</h3>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email || 'N/A'}</p>
+            <p><strong>Contact No:</strong> ${phone || 'N/A'}</p>
+            <p><strong>Message:</strong><br/>${message}</p>
+          `)
+          .setText(`New Inquiry\nName: ${name}\nEmail: ${email}\nContact: ${phone}\nMessage: ${message}`);
+
+        if (process.env.MAILERSEND_API_KEY && process.env.MAILERSEND_API_KEY !== 'dummy_key_for_dev') {
+            await mailerSend.email.send(emailParams);
+            console.log("Inquiry email notification sent.");
+        }
+    } catch (emailErr) {
+        console.error("Failed to send inquiry email notification:", emailErr);
+    }
+
     res.status(201).json({ id: newId, ...req.body });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -342,7 +384,7 @@ app.post('/api/inquiries', async (req, res) => {
 // Users
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT id, username, role FROM users');
+        const [rows] = await db.query('SELECT id, username, email, first_name, image_url, role FROM users');
         res.json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -350,15 +392,15 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/users', authenticateToken, async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password, role, email, first_name, image_url } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const [result] = await db.query(
-            'INSERT INTO users (username, password, role) VALUES (?, ?, ?) RETURNING id',
-            [username, hashedPassword, role || 'client']
+            'INSERT INTO users (username, password, role, email, first_name, image_url) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+            [username, hashedPassword, role || 'editor', email, first_name, image_url]
         );
         const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
-        res.status(201).json({ id: newId, username, role });
+        res.status(201).json({ id: newId, username, email, first_name, image_url, role: role || 'editor' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
