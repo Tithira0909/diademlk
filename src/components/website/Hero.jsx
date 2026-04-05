@@ -4,17 +4,36 @@ import ThreeBackground from './ThreeBackground';
 import { useData } from '../../context/DataContext';
 
 const Hero = ({ isDark }) => {
-  const { banners } = useData();
+  const { banners, loading: dataLoading } = useData();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // Preload at least the first banner image
+  useEffect(() => {
+    if (banners && banners.length > 0) {
+      const img = new Image();
+      img.src = banners[0].imageurl || banners[0].imageUrl;
+      img.onload = () => setImagesLoaded(true);
+      // Fallback in case of error
+      img.onerror = () => setImagesLoaded(true);
+    } else if (!dataLoading) {
+      setImagesLoaded(true);
+    }
+  }, [banners, dataLoading]);
 
   useEffect(() => {
-      if (banners && banners.length > 1) {
+      if (imagesLoaded && banners && banners.length > 1) {
           const interval = setInterval(() => {
               setCurrentIndex(prev => (prev + 1) % banners.length);
           }, 5000);
           return () => clearInterval(interval);
       }
-  }, [banners]);
+  }, [banners, imagesLoaded]);
+
+  // Don't render until data is loaded and first image is ready to prevent glitching
+  if (dataLoading || (banners && banners.length > 0 && !imagesLoaded)) {
+      return <section id="home" className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-black"></section>;
+  }
 
   if (banners && banners.length > 0) {
       const banner = banners[currentIndex];
