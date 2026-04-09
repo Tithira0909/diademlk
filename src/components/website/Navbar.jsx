@@ -41,11 +41,17 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
   };
 
   // Theme Styles
-  const navBg = isScrolled || location.pathname !== '/'
+  const isHomePage = location.pathname === '/';
+  const forceWhite = isHomePage && !isScrolled;
+
+  const navBg = isScrolled || !isHomePage
     ? (isDark ? 'bg-black/90 border-gray-800' : 'bg-white/90 border-gray-200')
     : 'bg-transparent border-transparent';
 
-  const textColor = isDark ? 'text-white' : 'text-zinc-900';
+  const textColor = forceWhite ? 'text-white' : (isDark ? 'text-white' : 'text-zinc-900');
+  const logoSrc = forceWhite ? "/logo-white.png" : (isDark ? "/logo-white.png" : "/logo-black.png");
+  const indicatorColor = forceWhite ? 'bg-white' : (isDark ? 'bg-white' : 'bg-black');
+  const themeToggleColor = forceWhite ? 'text-white hover:bg-white/20' : (isDark ? 'text-yellow-400 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100');
 
   return (
     <nav className={`fixed w-full z-50 transition-all duration-500 backdrop-blur-md border-b py-4 ${navBg}`}>
@@ -53,7 +59,7 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
         {/* Logo Area */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavClick('home')}>
           <img
-            src={isDark ? "/logo-white.png" : "/logo-black.png"}
+            src={logoSrc}
             alt="Diadem Logo"
             className="h-14 object-contain transition-all duration-500"
           />
@@ -65,16 +71,16 @@ const Navbar = ({ activeTab, setActiveTab, isDark, toggleTheme }) => {
             <button
               key={link.id}
               onClick={() => handleNavClick(link.id)}
-              className={`text-xs font-bold tracking-widest uppercase transition-all duration-300 relative group ${activeTab === link.id ? textColor : 'text-gray-500'}`}
+              className={`text-xs font-bold tracking-widest uppercase transition-all duration-300 relative group ${activeTab === link.id ? textColor : (forceWhite ? 'text-gray-300' : 'text-gray-500')}`}
             >
               {link.label}
-              <span className={`absolute -bottom-2 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`}></span>
+              <span className={`absolute -bottom-2 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${indicatorColor}`}></span>
             </button>
           ))}
 
           <button
             onClick={toggleTheme}
-            className={`p-2 rounded-full transition-transform hover:rotate-180 duration-500 ${isDark ? 'text-yellow-400 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}
+            className={`p-2 rounded-full transition-transform hover:rotate-180 duration-500 ${themeToggleColor}`}
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>

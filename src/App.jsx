@@ -23,9 +23,30 @@ const LoadingSpinner = () => (
   </div>
 );
 
+const Preloader = ({ onComplete }) => {
+  const [fadeOut, setFadeOut] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeOut(true);
+      setTimeout(onComplete, 500); // Wait for fade out animation
+    }, 1500); // Show preloader for 1.5 seconds
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-white transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+      <img src="/logo-black.png" alt="Diadem Loading..." className="h-16 animate-pulse" />
+    </div>
+  );
+};
+
 const App = () => {
+  const [loading, setLoading] = React.useState(true);
+
   return (
     <DataProvider>
+      {loading && <Preloader onComplete={() => setLoading(false)} />}
       <Router>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>

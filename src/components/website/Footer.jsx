@@ -118,11 +118,16 @@ const Footer = ({ isDark }) => {
 
         {/* Bottom Bar */}
         <div className={`pt-8 border-t flex flex-col md:flex-row justify-between items-center text-xs ${isDark ? 'border-zinc-900 text-gray-600' : 'border-zinc-300 text-zinc-500'}`}>
-            <p>© 2024 DiademLK. All rights reserved.</p>
-            <div className="flex gap-8 mt-4 md:mt-0">
-            <span>Privacy Policy</span>
-            <span>Terms of Trade</span>
-            <span>Sitemap</span>
+            <p>© 2026 DiademLK. All rights reserved.</p>
+            <div className="flex gap-4 mt-4 md:mt-0 items-center">
+              <span>Powered by </span>
+              <a href="https://www.zeatralabs.com" target="_blank" rel="noopener noreferrer">
+                <img
+                  src={isDark ? "/zeatra-white.png" : "/zeatra-black.png"}
+                  alt="Zeatra Labs"
+                  className="h-6 w-auto object-contain hover:opacity-80 transition-opacity"
+                />
+              </a>
             </div>
         </div>
       </div>
