@@ -49,15 +49,30 @@ async function setup() {
         console.log(`Connected to '${dbName}'. Creating tables...`);
 
         // Users
+        // Need to alter the table to add missing columns since IF NOT EXISTS won't update it
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(255) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(50) DEFAULT 'client',
+                role VARCHAR(50) DEFAULT 'editor',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE DEFAULT 'info@diademlk.com'`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(10)`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)`);
+            await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`);
+            // Change default role if it exists (for new rows)
+            await client.query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'editor'`);
+            // Update existing 'client' roles to 'editor'
+            await client.query(`UPDATE users SET role = 'editor' WHERE role = 'client'`);
+        } catch (e) {
+            console.log("Columns may already exist, skipping alter", e.message);
+        }
 
         // Articles
         await client.query(`
@@ -128,9 +143,9 @@ async function setup() {
         // Admin User (password: 'password')
         // Use ON CONFLICT to avoid errors on re-run
         await client.query(`
-            INSERT INTO users (username, password, role)
-            VALUES ('admin', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
-            ON CONFLICT (username) DO NOTHING;
+            INSERT INTO users (username, email, password, role)
+            VALUES ('admin', 'info@diademlk.com', '$2b$10$MQ2PaEuO27t1mG.ZrzPoqOflOzbc1O4feVYFjhObrb.MDoDMhWk7q', 'admin')
+            ON CONFLICT (username) DO UPDATE SET email = 'info@diademlk.com';
         `);
 
         await client.query(`

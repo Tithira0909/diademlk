@@ -8,23 +8,23 @@ const Footer = ({ isDark }) => {
   const textBody = isDark ? 'text-gray-500' : 'text-zinc-500';
 
   const { addInquiry } = useData();
-  const [formData, setFormData] = useState({ name: '', contact: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', contact: '', email: '', message: '' });
   const [status, setStatus] = useState('');
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
       e.preventDefault();
-      if (!formData.name || !formData.contact) return;
+      if (!formData.name || (!formData.contact && !formData.email)) return;
 
       addInquiry({
           name: formData.name,
-          phone: formData.contact, // Mapping contact to phone for now
-          message: formData.message,
-          email: '' // Not in original form, but InquiryManager expects it.
+          phone: formData.contact,
+          email: formData.email,
+          message: formData.message
       });
       setStatus('Inquiry sent!');
-      setFormData({ name: '', contact: '', message: '' });
+      setFormData({ name: '', contact: '', email: '', message: '' });
       setTimeout(() => setStatus(''), 3000);
   };
 
@@ -102,6 +102,7 @@ const Footer = ({ isDark }) => {
               <div className="space-y-4">
                 <input name="name" value={formData.name} onChange={handleChange} type="text" placeholder="Name" className={`w-full bg-transparent border-b pb-2 focus:outline-none text-sm ${isDark ? 'border-zinc-700 text-white focus:border-white' : 'border-zinc-300 text-black focus:border-black'}`} />
                 <input name="contact" value={formData.contact} onChange={handleChange} type="text" placeholder="Contact No" className={`w-full bg-transparent border-b pb-2 focus:outline-none text-sm ${isDark ? 'border-zinc-700 text-white focus:border-white' : 'border-zinc-300 text-black focus:border-black'}`} />
+                <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="Email Address" className={`w-full bg-transparent border-b pb-2 focus:outline-none text-sm ${isDark ? 'border-zinc-700 text-white focus:border-white' : 'border-zinc-300 text-black focus:border-black'}`} />
                 <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Message" rows="2" className={`w-full bg-transparent border-b pb-2 focus:outline-none text-sm ${isDark ? 'border-zinc-700 text-white focus:border-white' : 'border-zinc-300 text-black focus:border-black'}`}></textarea>
                 <button onClick={handleSubmit} className={`w-full py-3 text-xs font-bold uppercase tracking-widest transition-colors ${isDark ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'}`}>
                     {status || 'Submit Inquiry'}
@@ -110,7 +111,7 @@ const Footer = ({ isDark }) => {
             </div>
             <div className={`mt-6 flex items-center gap-4 text-sm ${textBody}`}>
               <Mail size={16} />
-              <span>info@diadem.com</span>
+              <span>info@diademlk.com</span>
             </div>
           </div>
         </div>

@@ -252,26 +252,58 @@ export const DataProvider = ({ children }) => {
   };
 
   // Auth
-  const login = async (username, password) => {
+  const fetchCaptcha = async () => {
+      try {
+          const res = await fetch(`${API_URL}/captcha`);
+          if (res.ok) {
+              return await res.json();
+          }
+      } catch (err) {
+          console.error("Failed to fetch captcha", err);
+      }
+      return null;
+  };
+
+  const loginWithCaptcha = async (username, password, captchaValue, captchaToken) => {
     try {
         const res = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, captchaValue, captchaToken })
         });
 
+        const data = await res.json();
         if (res.ok) {
-            const data = await res.json();
-            setCurrentUser(data);
-            localStorage.setItem('diadem_currentUser', JSON.stringify(data));
-            return true;
+            return { success: true, requireOtp: data.requireOtp, message: data.message };
         } else {
-            return false;
+            return { success: false, message: data.message };
         }
     } catch (error) {
         console.error("Login error:", error);
-        return false;
+        return { success: false, message: "Network error occurred." };
     }
+  };
+
+  const verifyOtp = async (username, otp) => {
+      try {
+          const res = await fetch(`${API_URL}/login/verify-otp`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, otp })
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+              setCurrentUser(data);
+              localStorage.setItem('diadem_currentUser', JSON.stringify(data));
+              return { success: true };
+          } else {
+              return { success: false, message: data.message };
+          }
+      } catch (error) {
+          console.error("OTP error:", error);
+          return { success: false, message: "Network error occurred." };
+      }
   };
 
   const logout = () => {
@@ -300,7 +332,9 @@ export const DataProvider = ({ children }) => {
       updateSettings,
       uploadFile,
       incrementViews,
-      login,
+      fetchCaptcha,
+      loginWithCaptcha,
+      verifyOtp,
       logout
     }}>
       {children}

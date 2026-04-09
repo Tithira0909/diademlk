@@ -18,9 +18,28 @@
     line-height: 1.6;
 }
 
+/* BlockNote Link Overrides */
+.bn-editor a {
+    color: #2563eb; /* blue-600 */
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.bn-editor a:hover {
+    color: #1d4ed8; /* blue-700 */
+}
+
 /* Dark Mode Overrides for BlockNote */
 .dark-mode-blocks .bn-editor {
     color: #e5e7eb; /* Gray-200 */
+}
+
+.dark-mode-blocks .bn-editor a {
+    color: #60a5fa; /* blue-400 */
+}
+
+.dark-mode-blocks .bn-editor a:hover {
+    color: #93c5fd; /* blue-300 */
 }
 
 /* Excerpt Styles */

@@ -7,6 +7,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { MailerSend, EmailParams, Sender, Recipient } from 'mailersend';
+import svgCaptcha from 'svg-captcha';
 import { db } from './db.js';
 
 dotenv.config();
@@ -52,6 +54,12 @@ db.query('SELECT 1')
           // Ignore unique constraint error if row exists
       }
       console.log('✅ Settings table verified.');
+
+      if (process.env.MAILERSEND_API_KEY && process.env.MAILERSEND_API_KEY !== 'dummy_key_for_dev') {
+          console.log('✅ MailerSend is active.');
+      } else {
+          console.log('⚠️  MailerSend is NOT active (OTP emails will be logged to console only).');
+      }
     } catch (err) {
       console.error('❌ Settings table init failed:', err.message);
     }
@@ -110,17 +118,99 @@ app.post('/api/upload', authenticateToken, upload.single('file'), (req, res) => 
     res.json({ url: fileUrl });
 });
 
-// Login
+// Captcha Generation
+app.get('/api/captcha', (req, res) => {
+  const captcha = svgCaptcha.create({
+      size: 6,
+      ignoreChars: '0o1i',
+      noise: 2,
+      color: true,
+      background: '#27272a' // zinc-800 to match UI
+  });
+
+  // Sign the captcha text into a short-lived token to stay stateless
+  const captchaToken = jwt.sign(
+      { text: captcha.text.toLowerCase() },
+      SECRET_KEY,
+      { expiresIn: '5m' }
+  );
+
+  res.json({
+      image: captcha.data,
+      token: captchaToken
+  });
+});
+
+// Configure MailerSend
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAILERSEND_API_KEY || "dummy_key_for_dev",
+});
+
+// Login - Step 1: Verify Credentials & Captcha, Send OTP
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, captchaValue, captchaToken } = req.body;
+
   try {
-    const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (rows.length > 0) {
+    // 1. Verify Captcha
+    if (!captchaValue || !captchaToken) {
+        return res.status(400).json({ message: 'Captcha is required' });
+    }
+
+    try {
+        const decodedCaptcha = jwt.verify(captchaToken, SECRET_KEY);
+        if (decodedCaptcha.text !== captchaValue.toLowerCase()) {
+            return res.status(400).json({ message: 'Invalid captcha' });
+        }
+    } catch (e) {
+        return res.status(400).json({ message: 'Captcha expired or invalid' });
+    }
+
+    // 2. Verify Credentials
+    const [rows] = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (rows && rows.length > 0) {
       const user = rows[0];
       const validPassword = await bcrypt.compare(password, user.password);
+
       if (validPassword) {
-          const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
-          res.json({ id: user.id, username: user.username, role: user.role, token });
+          // 3. Generate and Save OTP
+          const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+          const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes from now
+
+          await db.query(
+              'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE id = $3',
+              [otp, expiresAt, user.id]
+          );
+
+          // 4. Send OTP via MailerSend
+          try {
+              const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@diademlk.com";
+              const sentFrom = new Sender(fromEmail, "Diadem Admin");
+              const recipients = [new Recipient(user.email, user.username)];
+
+              const emailParams = new EmailParams()
+                .setFrom(sentFrom)
+                .setTo(recipients)
+                .setSubject("Admin Portal OTP")
+                .setHtml(`<strong>Your OTP for Diadem Admin Portal login is: ${otp}</strong><br>It will expire in 10 minutes.`)
+                .setText(`Your OTP for Diadem Admin Portal login is: ${otp}. It will expire in 10 minutes.`);
+
+              if (process.env.MAILERSEND_API_KEY && process.env.MAILERSEND_API_KEY !== 'dummy_key_for_dev') {
+                  await mailerSend.email.send(emailParams);
+                  console.log("OTP email sent via MailerSend.");
+              } else {
+                  console.log("MAILERSEND_API_KEY not set. OTP IS:", otp);
+              }
+
+          } catch (emailErr) {
+              console.error("Failed to send OTP email via MailerSend:", emailErr);
+              console.log("Email failed, but OTP is:", otp);
+          }
+
+          res.json({
+              message: 'OTP sent to registered email',
+              requireOtp: true,
+              username: user.username
+          });
       } else {
           res.status(401).json({ message: 'Invalid credentials' });
       }
@@ -131,6 +221,57 @@ app.post('/api/login', async (req, res) => {
     console.error("Login Error:", error);
     res.status(500).json({ message: error.message });
   }
+});
+
+// Login - Step 2: Verify OTP
+app.post('/api/login/verify-otp', async (req, res) => {
+    const { username, otp } = req.body;
+
+    if (!username || !otp) {
+        return res.status(400).json({ message: 'Username and OTP are required' });
+    }
+
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (!rows || rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid request' });
+        }
+
+        const user = rows[0];
+
+        // Check if OTP matches and is not expired
+        if (user.otp !== otp) {
+            return res.status(401).json({ message: 'Invalid OTP' });
+        }
+
+        if (new Date() > new Date(user.otp_expires_at)) {
+            return res.status(401).json({ message: 'OTP has expired' });
+        }
+
+        // OTP is valid. Clear it and issue JWT token
+        await db.query('UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE id = $1', [user.id]);
+
+        const token = jwt.sign({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            first_name: user.first_name,
+            image_url: user.image_url
+        }, SECRET_KEY, { expiresIn: '1h' });
+
+        res.json({
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            first_name: user.first_name,
+            image_url: user.image_url,
+            token
+        });
+
+    } catch (error) {
+        console.error("OTP Verification Error:", error);
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // Articles
@@ -206,6 +347,34 @@ app.post('/api/inquiries', async (req, res) => {
       [name, email, phone, message]
     );
     const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
+
+    // Send email notification to info@diademlk.com
+    try {
+        const fromEmail = process.env.MAILERSEND_FROM_EMAIL || "noreply@diademlk.com";
+        const sentFrom = new Sender(fromEmail, "Diadem Website");
+        const recipients = [new Recipient("info@diademlk.com", "Diadem Info")];
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(`New Inquiry from ${name}`)
+          .setHtml(`
+            <h3>New Inquiry Received</h3>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email || 'N/A'}</p>
+            <p><strong>Contact No:</strong> ${phone || 'N/A'}</p>
+            <p><strong>Message:</strong><br/>${message}</p>
+          `)
+          .setText(`New Inquiry\nName: ${name}\nEmail: ${email}\nContact: ${phone}\nMessage: ${message}`);
+
+        if (process.env.MAILERSEND_API_KEY && process.env.MAILERSEND_API_KEY !== 'dummy_key_for_dev') {
+            await mailerSend.email.send(emailParams);
+            console.log("Inquiry email notification sent.");
+        }
+    } catch (emailErr) {
+        console.error("Failed to send inquiry email notification:", emailErr);
+    }
+
     res.status(201).json({ id: newId, ...req.body });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -215,7 +384,7 @@ app.post('/api/inquiries', async (req, res) => {
 // Users
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT id, username, role FROM users');
+        const [rows] = await db.query('SELECT id, username, email, first_name, image_url, role FROM users');
         res.json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -223,15 +392,15 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/users', authenticateToken, async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password, role, email, first_name, image_url } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const [result] = await db.query(
-            'INSERT INTO users (username, password, role) VALUES (?, ?, ?) RETURNING id',
-            [username, hashedPassword, role || 'client']
+            'INSERT INTO users (username, password, role, email, first_name, image_url) VALUES (?, ?, ?, ?, ?, ?) RETURNING id',
+            [username, hashedPassword, role || 'editor', email, first_name, image_url]
         );
         const newId = result.insertId || (result.rows && result.rows[0] && result.rows[0].id);
-        res.status(201).json({ id: newId, username, role });
+        res.status(201).json({ id: newId, username, email, first_name, image_url, role: role || 'editor' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
